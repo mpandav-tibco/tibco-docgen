@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<msv:DocumentRoot xmlns:msv="http://www.tibco.com/xmlns/bw/moduleSharedVariable/2014">
+  <moduleSharedVariables>
+    <moduleSharedVariable name="KafkaBrokerUrl" type="String" description="Kafka broker connection URL">
+      <value>%%{KAFKA_BROKER_URL}%%</value>
+    </moduleSharedVariable>
+    <moduleSharedVariable name="DBConnectionString" type="String" description="Database connection string">
+      <value>%%{DB_CONNECTION_STRING}%%</value>
+    </moduleSharedVariable>
+    <moduleSharedVariable name="MaxRetryCount" type="Integer" description="Maximum retry attempts">
+      <value>3</value>
+    </moduleSharedVariable>
+  </moduleSharedVariables>
+</msv:DocumentRoot>

@@ -1,0 +1,26 @@
+{
+  "name": "@tibco-docgen/cli",
+  "version": "1.0.0",
+  "bin": {
+    "tibco-docgen": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "@tibco-docgen/core": "*",
+    "@tibco-docgen/parser-bw6": "*",
+    "@tibco-docgen/parser-ems": "*",
+    "@tibco-docgen/parser-flogo": "*",
+    "chokidar": "^5.0.0",
+    "pdf-lib": "^1.17.1",
+    "puppeteer-core": "^24.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "esbuild": "^0.28.0",
+    "typescript": "^5.4.0"
+  }
+}

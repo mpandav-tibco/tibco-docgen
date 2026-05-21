@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<repository:globalVariables xmlns:repository="http://www.tibco.com/xmlns/repo/types/2002">
+  <!-- Kafka Connection -->
+  <globalVariable name="/SystemName/Kafka/BootstrapServers" deploymentSettable="true" serviceSettable="false" dataType="String" isOverridable="true">
+    <value>kafka-broker-01.example.com:9093,kafka-broker-02.example.com:9093</value>
+    <description>Kafka bootstrap server addresses</description>
+  </globalVariable>
+  <globalVariable name="/SystemName/Kafka/TopicName" deploymentSettable="true" serviceSettable="false" dataType="String" isOverridable="true">
+    <value>adidas-integration-messages</value>
+    <description>Kafka topic to consume from</description>
+  </globalVariable>
+  <globalVariable name="/SystemName/Kafka/ConsumerGroup" deploymentSettable="false" serviceSettable="false" dataType="String" isOverridable="false">
+    <value>consumer-group-test</value>
+    <description>Kafka consumer group ID</description>
+  </globalVariable>
+  <globalVariable name="/SystemName/Kafka/Username" deploymentSettable="true" serviceSettable="false" dataType="String" isOverridable="true">
+    <value>kafka-service-user</value>
+  </globalVariable>
+  <globalVariable name="/SystemName/Kafka/Password" deploymentSettable="true" serviceSettable="false" dataType="Password" isOverridable="true">
+    <value>#!kFxP7rT2mQ8sN3wZ9vB1cY6jH0dL5oI4uE!#</value>
+  </globalVariable>
+  <globalVariable name="/SystemName/Kafka/FetchTimeout" deploymentSettable="false" serviceSettable="false" dataType="Integer" isOverridable="false">
+    <value>5000</value>
+    <description>Kafka fetch timeout in milliseconds</description>
+  </globalVariable>
+  <globalVariable name="/SystemName/Kafka/SessionTimeout" deploymentSettable="false" serviceSettable="false" dataType="Integer" isOverridable="false">
+    <value>30000</value>
+    <description>Kafka session timeout in milliseconds</description>
+  </globalVariable>
+  <!-- Database Connection -->
+  <globalVariable name="/SystemName/Database/ConnectionURL" deploymentSettable="true" serviceSettable="false" dataType="String" isOverridable="true">
+    <value>jdbc:sqlserver://devsdcapp10555\SQLEXPRESS;databaseName=master</value>
+    <description>JDBC connection URL for SQL Server</description>
+  </globalVariable>
+  <globalVariable name="/SystemName/Database/Username" deploymentSettable="true" serviceSettable="false" dataType="String" isOverridable="true">
+    <value>sa</value>
+  </globalVariable>
+  <globalVariable name="/SystemName/Database/Password" deploymentSettable="true" serviceSettable="false" dataType="Password" isOverridable="true">
+    <value>#!mR5tK2pW8xN4vB7cA1!#</value>
+  </globalVariable>
+  <globalVariable name="/SystemName/Database/DBSchema" deploymentSettable="false" serviceSettable="false" dataType="String" isOverridable="false">
+    <value>dbo</value>
+    <description>Database schema name</description>
+  </globalVariable>
+  <globalVariable name="/SystemName/Database/MaxConnections" deploymentSettable="false" serviceSettable="false" dataType="Integer" isOverridable="false">
+    <value>10</value>
+  </globalVariable>
+  <globalVariable name="/SystemName/Database/DBNoOfThread" deploymentSettable="false" serviceSettable="false" dataType="Integer" isOverridable="false">
+    <value>8</value>
+  </globalVariable>
+  <globalVariable name="/SystemName/Database/BatchSize" deploymentSettable="false" serviceSettable="false" dataType="Integer" isOverridable="false">
+    <value>100</value>
+    <description>Number of records per DB insert batch</description>
+  </globalVariable>
+  <!-- Logging -->
+  <globalVariable name="/bwceLib/ConsoleLoggingEnabled" deploymentSettable="true" serviceSettable="false" dataType="Boolean" isOverridable="true">
+    <value>true</value>
+  </globalVariable>
+  <globalVariable name="/bwceLib/WebserviceLoggingEnabled" deploymentSettable="true" serviceSettable="false" dataType="Boolean" isOverridable="true">
+    <value>false</value>
+  </globalVariable>
+  <globalVariable name="/bwceLib/DefaultLogLevel" deploymentSettable="true" serviceSettable="false" dataType="String" isOverridable="true">
+    <value>DEBUG</value>
+  </globalVariable>
+  <globalVariable name="/bwceLib/LogServiceHost" deploymentSettable="true" serviceSettable="false" dataType="String" isOverridable="true">
+    <value>localhost</value>
+  </globalVariable>
+  <globalVariable name="/bwceLib/LogServicePort" deploymentSettable="true" serviceSettable="false" dataType="Integer" isOverridable="true">
+    <value>9091</value>
+  </globalVariable>
+  <!-- Metadata -->
+  <globalVariable name="/SystemName/MetaData/InterfaceID" deploymentSettable="false" serviceSettable="false" dataType="String" isOverridable="false">
+    <value>KafkaToDB-001</value>
+    <description>Unique interface identifier for audit logging</description>
+  </globalVariable>
+  <globalVariable name="/SystemName/MetaData/SourceSystem" deploymentSettable="false" serviceSettable="false" dataType="String" isOverridable="false">
+    <value>Kafka</value>
+  </globalVariable>
+  <globalVariable name="/SystemName/MetaData/TargetSystem" deploymentSettable="false" serviceSettable="false" dataType="String" isOverridable="false">
+    <value>Database</value>
+  </globalVariable>
+  <globalVariable name="/SystemName/MetaData/Environment" deploymentSettable="true" serviceSettable="false" dataType="String" isOverridable="true">
+    <value>DEV</value>
+    <description>Deployment environment name (DEV/UAT/PROD)</description>
+  </globalVariable>
+  <!-- Recovery -->
+  <globalVariable name="/SystemName/Recovery/SleepTime" deploymentSettable="false" serviceSettable="false" dataType="Integer" isOverridable="false">
+    <value>60000</value>
+    <description>Recovery sleep time in milliseconds</description>
+  </globalVariable>
+</repository:globalVariables>

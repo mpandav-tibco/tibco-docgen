@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpws:process exitOnStandardFault="no"
+    name="kafkatopic_to_db.module.MP_KafkaReceiver"
+    suppressJoinFailure="yes"
+    targetNamespace="http://xmlns.example.com/20220811110620"
+    variableAccessSerializable="no"
+    xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+    xmlns:tib="http://ns.tibco.com/bw/property"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <bpws:sequence>
+    <bpws:extensionActivity>
+      <tib:kafkaConsumer name="KafkaReceiver"
+          activityDisplayName="Kafka Receive Message"
+          connectionRef="kafkatopic_to_db.module.KafkaConnectionResource"
+          topic="%%{/SystemName/Kafka/TopicName}%%"
+          groupId="%%{/SystemName/Kafka/ConsumerGroup}%%"
+          maxPollRecords="100"
+          fetchTimeout="%%{/SystemName/Kafka/FetchTimeout}%%"
+          sessionTimeout="%%{/SystemName/Kafka/SessionTimeout}%%"/>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:mapper name="ParseKafkaMessage"
+          activityDisplayName="Parse Kafka Message">
+        <tib:inputBindings>
+          <xsl:stylesheet
+              xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+              xmlns:tns="http://xmlns.example.com/kafka/payload"
+              xmlns:bw="http://ns.tibco.com/bw/function"
+              version="2.0">
+            <xsl:param name="KafkaReceiver"/>
+            <xsl:template name="ParseKafkaMessage-input" match="/">
+              <tns:KafkaPayload>
+                <tns:messageKey><xsl:value-of select="$KafkaReceiver/messageKey"/></tns:messageKey>
+                <tns:messageValue><xsl:value-of select="$KafkaReceiver/messageValue"/></tns:messageValue>
+                <tns:topicName><xsl:value-of select="$KafkaReceiver/topicName"/></tns:topicName>
+                <tns:partition><xsl:value-of select="$KafkaReceiver/partition"/></tns:partition>
+                <tns:offset><xsl:value-of select="$KafkaReceiver/offset"/></tns:offset>
+                <tns:receivedTimestamp><xsl:value-of select="$KafkaReceiver/timestamp"/></tns:receivedTimestamp>
+                <tns:interfaceId><xsl:value-of select="bw:getModuleProperty('/SystemName/MetaData/InterfaceID')"/></tns:interfaceId>
+                <tns:sourceSystem><xsl:value-of select="bw:getModuleProperty('/SystemName/MetaData/SourceSystem')"/></tns:sourceSystem>
+              </tns:KafkaPayload>
+            </xsl:template>
+          </xsl:stylesheet>
+        </tib:inputBindings>
+      </tib:mapper>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:callProcess name="CallDBPosting"
+          activityDisplayName="Call DB Posting"
+          processName="kafkatopic_to_db.module.CP_DBPosting"
+          spawn="false">
+        <tib:inputBindings>
+          <xsl:stylesheet
+              xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+              xmlns:tns="http://xmlns.example.com/dbposting"
+              xmlns:kfk="http://xmlns.example.com/kafka/payload"
+              version="2.0">
+            <xsl:param name="ParseKafkaMessage"/>
+            <xsl:template name="CallDBPosting-input" match="/">
+              <tns:DBPostingInput>
+                <tns:messageKey><xsl:value-of select="$ParseKafkaMessage/kfk:KafkaPayload/kfk:messageKey"/></tns:messageKey>
+                <tns:messageValue><xsl:value-of select="$ParseKafkaMessage/kfk:KafkaPayload/kfk:messageValue"/></tns:messageValue>
+                <tns:topicName><xsl:value-of select="$ParseKafkaMessage/kfk:KafkaPayload/kfk:topicName"/></tns:topicName>
+                <tns:partition><xsl:value-of select="$ParseKafkaMessage/kfk:KafkaPayload/kfk:partition"/></tns:partition>
+                <tns:offset><xsl:value-of select="$ParseKafkaMessage/kfk:KafkaPayload/kfk:offset"/></tns:offset>
+                <tns:receivedTimestamp><xsl:value-of select="$ParseKafkaMessage/kfk:KafkaPayload/kfk:receivedTimestamp"/></tns:receivedTimestamp>
+                <tns:interfaceId><xsl:value-of select="$ParseKafkaMessage/kfk:KafkaPayload/kfk:interfaceId"/></tns:interfaceId>
+              </tns:DBPostingInput>
+            </xsl:template>
+          </xsl:stylesheet>
+        </tib:inputBindings>
+      </tib:callProcess>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:log name="LogSuccess"
+          activityDisplayName="Log Success"
+          logLevel="Info"
+          message="Kafka message processed and posted to DB successfully. Topic: {$ParseKafkaMessage/kfk:KafkaPayload/kfk:topicName}, Offset: {$ParseKafkaMessage/kfk:KafkaPayload/kfk:offset}"/>
+    </bpws:extensionActivity>
+  </bpws:sequence>
+  <bpws:faultHandlers>
+    <bpws:catch>
+      <bpws:sequence>
+        <bpws:extensionActivity>
+          <tib:log name="LogKafkaError"
+              activityDisplayName="Log Error"
+              logLevel="Error"
+              message="Error processing Kafka message: {fault.detail}"/>
+        </bpws:extensionActivity>
+        <bpws:extensionActivity>
+          <tib:callProcess name="AuditKafkaError"
+              activityDisplayName="Audit Kafka Error"
+              processName="bwcelib.unexpectedAuditError"
+              spawn="false">
+            <tib:inputBindings>
+              <xsl:stylesheet
+                  xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                  xmlns:tns="http://xmlns.example.com/audit"
+                  version="2.0">
+                <xsl:param name="ParseKafkaMessage"/>
+                <xsl:template name="AuditKafkaError-input" match="/">
+                  <tns:AuditInput>
+                    <tns:errorSource><xsl:value-of select="'MP_KafkaReceiver'"/></tns:errorSource>
+                    <tns:messageKey><xsl:value-of select="$ParseKafkaMessage/tns:KafkaPayload/tns:messageKey"/></tns:messageKey>
+                  </tns:AuditInput>
+                </xsl:template>
+              </xsl:stylesheet>
+            </tib:inputBindings>
+          </tib:callProcess>
+        </bpws:extensionActivity>
+      </bpws:sequence>
+    </bpws:catch>
+  </bpws:faultHandlers>
+</bpws:process>

@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<repository xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.tibco.com/xmlns/repo/types/2002">
+  <globalVariables>
+    <globalVariable>
+      <name>BW.APPNODE.NAME</name>
+      <value></value>
+      <type>String</type>
+      <description>AppNode Name</description>
+    </globalVariable>
+    <globalVariable>
+      <name>BW.HOST.NAME</name>
+      <value></value>
+      <type>String</type>
+      <description>Host Name</description>
+    </globalVariable>
+    <globalVariable>
+      <name>SystemName</name>
+      <value>tibco</value>
+      <type>String</type>
+      <description>System/application name identifier</description>
+    </globalVariable>
+    <globalVariable>
+      <name>ObjectName</name>
+      <value>kafkatopic_to_db</value>
+      <type>String</type>
+      <description>Object name identifier</description>
+    </globalVariable>
+    <globalVariable>
+      <name>/SystemName/ObjectName/KafkaTopic</name>
+      <value>%%{KAFKA_TOPIC}%%</value>
+      <type>String</type>
+      <description>Kafka topic name to consume from</description>
+    </globalVariable>
+    <globalVariable>
+      <name>/SystemName/ObjectName/KafkaConsumerGroupId</name>
+      <value>%%{KAFKA_CONSUMER_GROUP}%%</value>
+      <type>String</type>
+      <description>Kafka consumer group ID</description>
+    </globalVariable>
+    <globalVariable>
+      <name>/SystemName/ObjectName/KafkaMaxPollRecords</name>
+      <value>500</value>
+      <type>Integer</type>
+      <description>Maximum records per Kafka poll</description>
+    </globalVariable>
+    <globalVariable>
+      <name>/SystemName/ObjectName/KafkaReconnectBackOff</name>
+      <value>50</value>
+      <type>Integer</type>
+      <description>Kafka reconnect backoff in ms</description>
+    </globalVariable>
+    <globalVariable>
+      <name>/SystemName/ObjectName/KafkaRetryBackOff</name>
+      <value>100</value>
+      <type>Integer</type>
+      <description>Kafka retry backoff in ms</description>
+    </globalVariable>
+    <globalVariable>
+      <name>/SystemName/ObjectName/KafkaRequestTimeout</name>
+      <value>30000</value>
+      <type>Integer</type>
+      <description>Kafka request timeout in ms</description>
+    </globalVariable>
+    <globalVariable>
+      <name>/SystemName/ObjectName/KafkaRefereshInterval</name>
+      <value>3600000</value>
+      <type>Integer</type>
+      <description>Kafka SSL cert refresh interval in ms</description>
+    </globalVariable>
+    <globalVariable>
+      <name>/SystemName/Database/DBUrl</name>
+      <value>%%{DB_URL}%%</value>
+      <type>String</type>
+      <description>JDBC database URL</description>
+    </globalVariable>
+    <globalVariable>
+      <name>/SystemName/Database/DBDriver</name>
+      <value>%%{DB_DRIVER}%%</value>
+      <type>String</type>
+      <description>JDBC driver class name</description>
+    </globalVariable>
+    <globalVariable>
+      <name>/SystemName/Database/DBUserName</name>
+      <value>%%{DB_USER}%%</value>
+      <type>String</type>
+      <description>Database username</description>
+    </globalVariable>
+    <globalVariable>
+      <name>/SystemName/Database/DBPassword</name>
+      <value>#!kFxP7rQ2mNs8dTv!!</value>
+      <type>Password</type>
+      <description>Database password (encrypted)</description>
+    </globalVariable>
+    <globalVariable>
+      <name>/SystemName/Database/DBMaxConnection</name>
+      <value>10</value>
+      <type>Integer</type>
+      <description>Maximum DB connection pool size</description>
+    </globalVariable>
+    <globalVariable>
+      <name>/SystemName/Database/DBLoginTimeoutInSecs</name>
+      <value>30</value>
+      <type>Integer</type>
+      <description>DB login timeout in seconds</description>
+    </globalVariable>
+    <globalVariable>
+      <name>/SystemName/Database/DBConnectionIdleTimeout</name>
+      <value>600</value>
+      <type>Integer</type>
+      <description>DB connection idle timeout in seconds</description>
+    </globalVariable>
+    <globalVariable>
+      <name>/SystemName/Database/DBNoOfThread</name>
+      <value>8</value>
+      <type>Integer</type>
+      <description>Number of DB worker threads</description>
+    </globalVariable>
+    <globalVariable>
+      <name>/SystemName/Database/DBSchema</name>
+      <value>%%{DB_SCHEMA}%%</value>
+      <type>String</type>
+      <description>Database schema name</description>
+    </globalVariable>
+    <globalVariable>
+      <name>/SystemName/KafkaCerts/KafkaKeyStoreLocation</name>
+      <value>%%{KAFKA_KEYSTORE_PATH}%%</value>
+      <type>String</type>
+      <description>Kafka keystore file path</description>
+    </globalVariable>
+    <globalVariable>
+      <name>/SystemName/KafkaCerts/KafkaKeyStorePassword</name>
+      <value>#!mKqR3nPv9xLs5!!</value>
+      <type>Password</type>
+      <description>Kafka keystore password (encrypted)</description>
+    </globalVariable>
+    <globalVariable>
+      <name>/SystemName/KafkaCerts/KafkaKeyPassword</name>
+      <value>#!nRsT7uVw2yZa1!!</value>
+      <type>Password</type>
+      <description>Kafka key password (encrypted)</description>
+    </globalVariable>
+    <globalVariable>
+      <name>/SystemName/KafkaCerts/KafkaTrustStoreLocation</name>
+      <value>%%{KAFKA_TRUSTSTORE_PATH}%%</value>
+      <type>String</type>
+      <description>Kafka truststore file path</description>
+    </globalVariable>
+    <globalVariable>
+      <name>/SystemName/KafkaCerts/KafkaTrustStorePassword</name>
+      <value>#!pQrS8tUv3wXy4!!</value>
+      <type>Password</type>
+      <description>Kafka truststore password (encrypted)</description>
+    </globalVariable>
+  </globalVariables>
+</repository>

@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pd:ProcessDefinition
+    xmlns:pd="http://xmlns.tibco.com/bw/process/2014"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <pd:name>Processes/ListOrders</pd:name>
+  <pd:description>Returns a paginated list of orders via REST GET /orders with optional status filter</pd:description>
+  <pd:startName>Start</pd:startName>
+
+  <pd:activity name="Start">
+    <pd:type>com.tibco.bw.palette.api.Start</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <config/>
+  </pd:activity>
+
+  <pd:activity name="HTTP Receiver">
+    <pd:type>com.tibco.bw.palette.rest.runtime.RESTHTTPReceiveEventActivity</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <pd:description>Accepts GET /orders with optional ?status and ?page query params</pd:description>
+    <config>
+      <resourceInstance>shared://REST_HTTP_Connector</resourceInstance>
+      <path>/orders</path>
+      <method>GET</method>
+      <port>%%{HTTP_PORT}%%</port>
+    </config>
+  </pd:activity>
+
+  <pd:activity name="Parse Query Params">
+    <pd:type>com.tibco.bw.palette.generalactivities.runtime.MappingActivity</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <pd:description>Extracts and validates pagination and filter parameters</pd:description>
+    <config/>
+  </pd:activity>
+
+  <pd:activity name="Query Orders">
+    <pd:type>com.tibco.bw.palette.jdbc.runtime.JDBCQueryActivity</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <pd:description>Queries orders with optional status filter, ordered by created_at DESC</pd:description>
+    <config>
+      <JDBCResource>shared://OrdersDB</JDBCResource>
+      <statement>SELECT order_id, customer_id, status, total_amount, created_at FROM orders WHERE (? IS NULL OR status = ?) ORDER BY created_at DESC LIMIT ? OFFSET ?</statement>
+      <outputStyle>Row as Element</outputStyle>
+      <maxRows>%%{MAX_PAGE_SIZE}%%</maxRows>
+    </config>
+  </pd:activity>
+
+  <pd:activity name="Map Results">
+    <pd:type>com.tibco.bw.palette.generalactivities.runtime.MappingActivity</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <pd:description>Maps JDBC result set to JSON array response</pd:description>
+    <config/>
+  </pd:activity>
+
+  <pd:activity name="Send Reply">
+    <pd:type>com.tibco.bw.palette.rest.runtime.RESTHTTPSendReplyActivity</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <config>
+      <responseCode>200</responseCode>
+      <contentType>application/json</contentType>
+    </config>
+  </pd:activity>
+
+  <pd:activity name="End">
+    <pd:type>com.tibco.bw.palette.api.End</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <config/>
+  </pd:activity>
+
+  <pd:transition>
+    <pd:from>Start</pd:from>
+    <pd:to>HTTP Receiver</pd:to>
+    <pd:conditionType>always</pd:conditionType>
+  </pd:transition>
+
+  <pd:transition>
+    <pd:from>HTTP Receiver</pd:from>
+    <pd:to>Parse Query Params</pd:to>
+    <pd:conditionType>always</pd:conditionType>
+  </pd:transition>
+
+  <pd:transition>
+    <pd:from>Parse Query Params</pd:from>
+    <pd:to>Query Orders</pd:to>
+    <pd:conditionType>always</pd:conditionType>
+  </pd:transition>
+
+  <pd:transition>
+    <pd:from>Query Orders</pd:from>
+    <pd:to>Map Results</pd:to>
+    <pd:conditionType>always</pd:conditionType>
+  </pd:transition>
+
+  <pd:transition>
+    <pd:from>Map Results</pd:from>
+    <pd:to>Send Reply</pd:to>
+    <pd:conditionType>always</pd:conditionType>
+  </pd:transition>
+
+  <pd:transition>
+    <pd:from>Send Reply</pd:from>
+    <pd:to>End</pd:to>
+    <pd:conditionType>always</pd:conditionType>
+  </pd:transition>
+
+</pd:ProcessDefinition>

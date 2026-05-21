@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jdbc:JDBCConnectionResource xmlns:jdbc="http://www.tibco.com/bw6/resource/jdbc">
+  <jdbc:name>OrdersDB</jdbc:name>
+  <jdbc:description>PostgreSQL database for order management</jdbc:description>
+  <jdbc:driver>com.tibco.jdbc.postgresql.PostgreSQLDriver</jdbc:driver>
+  <jdbc:url>jdbc:tibcosoftwareinc:postgresql://%%{DB_HOST}%%:%%{DB_PORT}%%/%%{DB_NAME}%%</jdbc:url>
+  <jdbc:username>%%{DB_USER}%%</jdbc:username>
+  <jdbc:password>%%{DB_PASSWORD}%%</jdbc:password>
+  <jdbc:maxConnections>10</jdbc:maxConnections>
+  <jdbc:loginTimeout>30</jdbc:loginTimeout>
+  <jdbc:connectionTimeout>60</jdbc:connectionTimeout>
+  <jdbc:validateConnection>true</jdbc:validateConnection>
+</jdbc:JDBCConnectionResource>

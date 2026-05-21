@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pd:ProcessDefinition
+    xmlns:pd="http://xmlns.tibco.com/bw/process/2014"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <pd:name>Processes/CreateOrder</pd:name>
+  <pd:description>Creates a new order via REST POST /orders, persists it, and publishes an event to EMS</pd:description>
+  <pd:startName>Start</pd:startName>
+
+  <pd:activity name="Start">
+    <pd:type>com.tibco.bw.palette.api.Start</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <config/>
+  </pd:activity>
+
+  <pd:activity name="HTTP Receiver">
+    <pd:type>com.tibco.bw.palette.rest.runtime.RESTHTTPReceiveEventActivity</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <pd:description>Accepts POST request with order payload</pd:description>
+    <config>
+      <resourceInstance>shared://REST_HTTP_Connector</resourceInstance>
+      <path>/orders</path>
+      <method>POST</method>
+      <port>%%{HTTP_PORT}%%</port>
+      <contentType>application/json</contentType>
+    </config>
+  </pd:activity>
+
+  <pd:activity name="Validate Input">
+    <pd:type>com.tibco.bw.palette.generalactivities.runtime.MappingActivity</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <pd:description>Validates required fields and maps request to internal schema</pd:description>
+    <config/>
+    <pd:inputBindings>
+      <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                      xmlns:tns="http://xmlns.example.com/order"
+                      version="2.0">
+        <xsl:param name="HTTP Receiver"/>
+        <xsl:template match="/">
+          <tns:OrderRequest>
+            <tns:customerId><xsl:value-of select="$HTTP_Receiver/body/customerId"/></tns:customerId>
+            <tns:productId><xsl:value-of select="$HTTP_Receiver/body/productId"/></tns:productId>
+            <tns:quantity><xsl:value-of select="$HTTP_Receiver/body/quantity"/></tns:quantity>
+            <tns:totalAmount><xsl:value-of select="$HTTP_Receiver/body/totalAmount"/></tns:totalAmount>
+            <tns:currency><xsl:value-of select="($HTTP_Receiver/body/currency, 'USD')[1]"/></tns:currency>
+            <tns:notes><xsl:value-of select="$HTTP_Receiver/body/notes"/></tns:notes>
+            <tns:requestTimestamp><xsl:value-of select="current-dateTime()"/></tns:requestTimestamp>
+          </tns:OrderRequest>
+        </xsl:template>
+      </xsl:stylesheet>
+    </pd:inputBindings>
+  </pd:activity>
+
+  <pd:activity name="Insert Order">
+    <pd:type>com.tibco.bw.palette.jdbc.runtime.JDBCUpdateActivity</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <pd:description>Inserts the new order record into the orders table</pd:description>
+    <config>
+      <JDBCResource>shared://OrdersDB</JDBCResource>
+      <statement>INSERT INTO orders (customer_id, status, total_amount, created_at) VALUES (?, 'PENDING', ?, NOW()) RETURNING order_id</statement>
+      <returnGeneratedKeys>true</returnGeneratedKeys>
+    </config>
+  </pd:activity>
+
+  <pd:activity name="Publish Order Event">
+    <pd:type>com.tibco.bw.palette.ems.runtime.EMSPublishActivity</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <pd:description>Publishes order.created event to EMS for downstream consumers</pd:description>
+    <config>
+      <connectionResource>shared://OrderEvents</connectionResource>
+      <destination>%%{ORDER_EVENTS_TOPIC}%%</destination>
+      <destinationType>topic</destinationType>
+      <messageType>MapMessage</messageType>
+      <deliveryMode>PERSISTENT</deliveryMode>
+    </config>
+  </pd:activity>
+
+  <pd:activity name="Send Created Response">
+    <pd:type>com.tibco.bw.palette.rest.runtime.RESTHTTPSendReplyActivity</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <config>
+      <responseCode>201</responseCode>
+      <contentType>application/json</contentType>
+    </config>
+  </pd:activity>
+
+  <pd:activity name="Log DB Error">
+    <pd:type>com.tibco.bw.palette.log.runtime.LogActivity</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <pd:description>Logs database insert failures</pd:description>
+    <config>
+      <message>Failed to insert order into database</message>
+      <severity>ERROR</severity>
+    </config>
+  </pd:activity>
+
+  <pd:activity name="Send Error Response">
+    <pd:type>com.tibco.bw.palette.rest.runtime.RESTHTTPSendReplyActivity</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <config>
+      <responseCode>500</responseCode>
+      <contentType>application/json</contentType>
+    </config>
+  </pd:activity>
+
+  <pd:activity name="End">
+    <pd:type>com.tibco.bw.palette.api.End</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <config/>
+  </pd:activity>
+
+  <pd:transition>
+    <pd:from>Start</pd:from>
+    <pd:to>HTTP Receiver</pd:to>
+    <pd:conditionType>always</pd:conditionType>
+  </pd:transition>
+
+  <pd:transition>
+    <pd:from>HTTP Receiver</pd:from>
+    <pd:to>Validate Input</pd:to>
+    <pd:conditionType>always</pd:conditionType>
+  </pd:transition>
+
+  <pd:transition>
+    <pd:from>Validate Input</pd:from>
+    <pd:to>Insert Order</pd:to>
+    <pd:conditionType>always</pd:conditionType>
+  </pd:transition>
+
+  <pd:transition>
+    <pd:from>Insert Order</pd:from>
+    <pd:to>Publish Order Event</pd:to>
+    <pd:conditionType>always</pd:conditionType>
+  </pd:transition>
+
+  <pd:transition>
+    <pd:from>Insert Order</pd:from>
+    <pd:to>Log DB Error</pd:to>
+    <pd:conditionType>error</pd:conditionType>
+  </pd:transition>
+
+  <pd:transition>
+    <pd:from>Publish Order Event</pd:from>
+    <pd:to>Send Created Response</pd:to>
+    <pd:conditionType>always</pd:conditionType>
+  </pd:transition>
+
+  <pd:transition>
+    <pd:from>Log DB Error</pd:from>
+    <pd:to>Send Error Response</pd:to>
+    <pd:conditionType>always</pd:conditionType>
+  </pd:transition>
+
+  <pd:transition>
+    <pd:from>Send Created Response</pd:from>
+    <pd:to>End</pd:to>
+    <pd:conditionType>always</pd:conditionType>
+  </pd:transition>
+
+  <pd:transition>
+    <pd:from>Send Error Response</pd:from>
+    <pd:to>End</pd:to>
+    <pd:conditionType>always</pd:conditionType>
+  </pd:transition>
+
+</pd:ProcessDefinition>

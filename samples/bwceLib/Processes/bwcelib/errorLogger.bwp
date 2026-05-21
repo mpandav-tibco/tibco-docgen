@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpws:process exitOnStandardFault="no" name="bwcelib.errorLogger" suppressJoinFailure="yes"
+    targetNamespace="http://xmlns.example.com/errorLogger" xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+    xmlns:info="http://www.tibco.com/bw/process/info"
+    xmlns:tib="http://ns.tibco.com/bw/property"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <info:processInfo callable="true" stateless="true" singleton="false" type="IT">
+    <info:Description>Error logger — logs errors from fault handlers throughout the application.</info:Description>
+  </info:processInfo>
+  <bpws:variables>
+    <bpws:variable name="Start" messageType="bpws:anyContent"/>
+    <bpws:variable name="End" messageType="bpws:anyContent"/>
+  </bpws:variables>
+  <bpws:flow>
+    <bpws:extensionActivity>
+      <tib:receive createInstance="yes" name="Start"><tib:inputBindings/></tib:receive>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:activity name="LogError" type="com.tibco.bw.generalactivities.log.runtime.LogActivity">
+        <info:Description>Log error message to console.</info:Description>
+        <tib:inputBindings>
+          <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                          xmlns:tns="http://xmlns.example.com/log"
+                          xmlns:bw="http://www.tibco.com/bw/xslt/custom-functions"
+                          version="2.0">
+            <xsl:param name="Start"/>
+            <xsl:template match="/">
+              <tns:LogInput>
+                <tns:message><xsl:value-of select="concat('[ERROR] svc=', bw:getModuleProperty('/MetaData/ServiceID'), ' code=', $Start/errorCode, ' msg=', $Start/errorMessage, ' corr=', $Start/correlationId)"/></tns:message>
+                <tns:logLevel><xsl:value-of select="'ERROR'"/></tns:logLevel>
+                <tns:errorCode><xsl:value-of select="$Start/errorCode"/></tns:errorCode>
+                <tns:correlationId><xsl:value-of select="$Start/correlationId"/></tns:correlationId>
+              </tns:LogInput>
+            </xsl:template>
+          </xsl:stylesheet>
+        </tib:inputBindings>
+      </tib:activity>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:reply name="End"><tib:inputBindings/></tib:reply>
+    </bpws:extensionActivity>
+  </bpws:flow>
+</bpws:process>

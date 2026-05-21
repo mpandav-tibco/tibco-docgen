@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpws:process exitOnStandardFault="no" name="bwcelib.routeProcessor" suppressJoinFailure="yes"
+    targetNamespace="http://xmlns.example.com/routeProcessor" xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+    xmlns:info="http://www.tibco.com/bw/process/info"
+    xmlns:tib="http://ns.tibco.com/bw/property"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <info:processInfo callable="true" stateless="true" singleton="false" type="IT">
+    <info:Description>Routes messages to appropriate handlers based on content-based routing rules.</info:Description>
+  </info:processInfo>
+  <bpws:variables>
+    <bpws:variable name="Start" messageType="bpws:anyContent"/>
+    <bpws:variable name="End" messageType="bpws:anyContent"/>
+  </bpws:variables>
+  <bpws:flow>
+    <bpws:links>
+      <bpws:link name="StartToRoute"/>
+      <bpws:link name="RouteToHandler"/>
+    </bpws:links>
+    <bpws:extensionActivity>
+      <tib:receive createInstance="yes" name="Start"><tib:inputBindings/></tib:receive>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:generalMapping name="DetermineRoute">
+        <info:Description>Evaluate routing conditions to determine target handler.</info:Description>
+        <tib:inputBindings>
+          <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                          xmlns:tns="http://xmlns.example.com/routing"
+                          xmlns:bw="http://www.tibco.com/bw/xslt/custom-functions"
+                          version="2.0">
+            <xsl:param name="Start"/>
+            <xsl:template match="/">
+              <tns:RoutingDecision>
+                <tns:routeTarget><xsl:value-of select="$Start/messageType"/></tns:routeTarget>
+                <tns:sourceSystem><xsl:value-of select="$Start/sourceSystem"/></tns:sourceSystem>
+                <tns:priority><xsl:value-of select="($Start/priority, '5')[1]"/></tns:priority>
+                <tns:routingKey><xsl:value-of select="concat($Start/sourceSystem, '.', $Start/messageType)"/></tns:routingKey>
+                <tns:correlationId><xsl:value-of select="$Start/correlationId"/></tns:correlationId>
+                <tns:maxRetries><xsl:value-of select="bw:getModuleProperty('/Routing/MaxRetries')"/></tns:maxRetries>
+                <tns:deadLetterQueue><xsl:value-of select="bw:getModuleProperty('/Routing/DeadLetterQueue')"/></tns:deadLetterQueue>
+              </tns:RoutingDecision>
+            </xsl:template>
+          </xsl:stylesheet>
+        </tib:inputBindings>
+      </tib:generalMapping>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:callProcess name="CallHandler" processRef="bwcelib.logger">
+        <info:Description>Invoke the selected handler process.</info:Description>
+        <tib:inputBindings>
+          <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                          xmlns:tns="http://xmlns.example.com/logger"
+                          version="2.0">
+            <xsl:param name="Start"/>
+            <xsl:param name="DetermineRoute"/>
+            <xsl:template match="/">
+              <tns:LogInput>
+                <tns:message><xsl:value-of select="concat('Routing message type=', $DetermineRoute/RoutingDecision/routeTarget, ' key=', $DetermineRoute/RoutingDecision/routingKey, ' priority=', $DetermineRoute/RoutingDecision/priority)"/></tns:message>
+                <tns:logLevel><xsl:value-of select="'DEBUG'"/></tns:logLevel>
+                <tns:category><xsl:value-of select="'ROUTING'"/></tns:category>
+                <tns:correlationId><xsl:value-of select="$DetermineRoute/RoutingDecision/correlationId"/></tns:correlationId>
+              </tns:LogInput>
+            </xsl:template>
+          </xsl:stylesheet>
+        </tib:inputBindings>
+      </tib:callProcess>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:reply name="End"><tib:inputBindings/></tib:reply>
+    </bpws:extensionActivity>
+  </bpws:flow>
+</bpws:process>

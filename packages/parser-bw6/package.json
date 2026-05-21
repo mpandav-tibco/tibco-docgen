@@ -1,0 +1,19 @@
+{
+  "name": "@tibco-docgen/parser-bw6",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@tibco-docgen/core": "*",
+    "@types/adm-zip": "^0.5.8",
+    "adm-zip": "^0.5.17",
+    "fast-xml-parser": "^4.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0"
+  }
+}

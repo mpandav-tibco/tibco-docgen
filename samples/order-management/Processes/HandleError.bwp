@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pd:ProcessDefinition
+    xmlns:pd="http://xmlns.tibco.com/bw/process/2014"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <pd:name>Processes/HandleError</pd:name>
+  <pd:description>Global error handler subprocess — logs the error and returns a standardised error response</pd:description>
+  <pd:startName>Start</pd:startName>
+
+  <pd:activity name="Start">
+    <pd:type>com.tibco.bw.palette.api.Start</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <config/>
+  </pd:activity>
+
+  <pd:activity name="Log Error">
+    <pd:type>com.tibco.bw.palette.log.runtime.LogActivity</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <pd:description>Logs the error message and stack trace at ERROR severity</pd:description>
+    <config>
+      <message>Unhandled error in Order Management Service</message>
+      <severity>ERROR</severity>
+    </config>
+  </pd:activity>
+
+  <pd:activity name="Set Error Response">
+    <pd:type>com.tibco.bw.palette.generalactivities.runtime.MappingActivity</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <pd:description>Builds a standardised error envelope from the caught exception</pd:description>
+    <config/>
+  </pd:activity>
+
+  <pd:activity name="Send Error Reply">
+    <pd:type>com.tibco.bw.palette.rest.runtime.RESTHTTPSendReplyActivity</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <config>
+      <responseCode>500</responseCode>
+      <contentType>application/json</contentType>
+    </config>
+  </pd:activity>
+
+  <pd:activity name="End">
+    <pd:type>com.tibco.bw.palette.api.End</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <config/>
+  </pd:activity>
+
+  <pd:transition>
+    <pd:from>Start</pd:from>
+    <pd:to>Log Error</pd:to>
+    <pd:conditionType>always</pd:conditionType>
+  </pd:transition>
+
+  <pd:transition>
+    <pd:from>Log Error</pd:from>
+    <pd:to>Set Error Response</pd:to>
+    <pd:conditionType>always</pd:conditionType>
+  </pd:transition>
+
+  <pd:transition>
+    <pd:from>Set Error Response</pd:from>
+    <pd:to>Send Error Reply</pd:to>
+    <pd:conditionType>always</pd:conditionType>
+  </pd:transition>
+
+  <pd:transition>
+    <pd:from>Send Error Reply</pd:from>
+    <pd:to>End</pd:to>
+    <pd:conditionType>always</pd:conditionType>
+  </pd:transition>
+
+</pd:ProcessDefinition>

@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpws:process exitOnStandardFault="no" name="bwcelib.auditStart" suppressJoinFailure="yes"
+    targetNamespace="http://xmlns.example.com/auditStart" xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+    xmlns:info="http://www.tibco.com/bw/process/info"
+    xmlns:tib="http://ns.tibco.com/bw/property"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <info:processInfo callable="true" stateless="true" singleton="false" type="IT">
+    <info:Description>Initializes an audit trail with correlation ID, timestamp and payload data.</info:Description>
+  </info:processInfo>
+  <bpws:variables>
+    <bpws:variable name="Start" messageType="bpws:anyContent"/>
+    <bpws:variable name="End" messageType="bpws:anyContent"/>
+  </bpws:variables>
+  <bpws:flow>
+    <bpws:extensionActivity>
+      <tib:receive createInstance="yes" name="Start"><tib:inputBindings/></tib:receive>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:generalMapping name="GenerateCorrelationID">
+        <info:Description>Generate unique correlation ID for this audit trail.</info:Description>
+        <tib:inputBindings>
+          <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                          xmlns:tns="http://xmlns.example.com/audit"
+                          xmlns:bw="http://www.tibco.com/bw/xslt/custom-functions"
+                          version="2.0">
+            <xsl:param name="Start"/>
+            <xsl:template match="/">
+              <tns:CorrelationData>
+                <tns:correlationId><xsl:value-of select="concat(bw:getModuleProperty('/MetaData/ServiceID'), '-', $Start/body/requestId, '-', format-dateTime(current-dateTime(), '[Y][M][D][H][m][s]'))"/></tns:correlationId>
+                <tns:timestamp><xsl:value-of select="current-dateTime()"/></tns:timestamp>
+                <tns:serviceId><xsl:value-of select="bw:getModuleProperty('/MetaData/ServiceID')"/></tns:serviceId>
+                <tns:environment><xsl:value-of select="bw:getModuleProperty('/MetaData/Environment')"/></tns:environment>
+              </tns:CorrelationData>
+            </xsl:template>
+          </xsl:stylesheet>
+        </tib:inputBindings>
+      </tib:generalMapping>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:generalMapping name="PrepareAuditStart">
+        <info:Description>Map audit start event data including payload and metadata.</info:Description>
+        <tib:inputBindings>
+          <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                          xmlns:tns="http://xmlns.example.com/audit"
+                          xmlns:bw="http://www.tibco.com/bw/xslt/custom-functions"
+                          version="2.0">
+            <xsl:param name="Start"/>
+            <xsl:param name="GenerateCorrelationID"/>
+            <xsl:template match="/">
+              <tns:AuditStartEvent>
+                <tns:auditType><xsl:value-of select="'START'"/></tns:auditType>
+                <tns:correlationId><xsl:value-of select="$GenerateCorrelationID/CorrelationData/correlationId"/></tns:correlationId>
+                <tns:serviceId><xsl:value-of select="bw:getModuleProperty('/MetaData/ServiceID')"/></tns:serviceId>
+                <tns:scenarioId><xsl:value-of select="bw:getModuleProperty('/MetaData/ScenarioID')"/></tns:scenarioId>
+                <tns:operationName><xsl:value-of select="$Start/body/operationName"/></tns:operationName>
+                <tns:startTimestamp><xsl:value-of select="current-dateTime()"/></tns:startTimestamp>
+                <tns:requestPayload><xsl:value-of select="string($Start/body)"/></tns:requestPayload>
+                <tns:sourceSystem><xsl:value-of select="$Start/headers/X-Source-System"/></tns:sourceSystem>
+              </tns:AuditStartEvent>
+            </xsl:template>
+          </xsl:stylesheet>
+        </tib:inputBindings>
+      </tib:generalMapping>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:callProcess name="CallLogger" processRef="bwcelib.logger">
+        <info:Description>Log the audit start event.</info:Description>
+        <tib:inputBindings>
+          <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                          xmlns:tns="http://xmlns.example.com/logger"
+                          version="2.0">
+            <xsl:param name="PrepareAuditStart"/>
+            <xsl:template match="/">
+              <tns:LogInput>
+                <tns:message><xsl:value-of select="concat('Audit START: ', $PrepareAuditStart/AuditStartEvent/operationName, ' correlationId=', $PrepareAuditStart/AuditStartEvent/correlationId)"/></tns:message>
+                <tns:logLevel><xsl:value-of select="'INFO'"/></tns:logLevel>
+                <tns:category><xsl:value-of select="'AUDIT'"/></tns:category>
+                <tns:correlationId><xsl:value-of select="$PrepareAuditStart/AuditStartEvent/correlationId"/></tns:correlationId>
+              </tns:LogInput>
+            </xsl:template>
+          </xsl:stylesheet>
+        </tib:inputBindings>
+      </tib:callProcess>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:reply name="End"><tib:inputBindings/></tib:reply>
+    </bpws:extensionActivity>
+  </bpws:flow>
+</bpws:process>

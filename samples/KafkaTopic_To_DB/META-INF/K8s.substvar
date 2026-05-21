@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<repository:globalVariables xmlns:repository="http://www.tibco.com/xmlns/repo/types/2002">
+  <!-- K8s profile — override connection strings for Kubernetes deployment -->
+  <globalVariable name="/SystemName/Kafka/BootstrapServers" deploymentSettable="true" serviceSettable="false" dataType="String" isOverridable="true">
+    <value>%%{KAFKA_BOOTSTRAP_SERVERS}%%</value>
+    <description>K8s: injected via ConfigMap</description>
+  </globalVariable>
+  <globalVariable name="/SystemName/Kafka/TopicName" deploymentSettable="true" serviceSettable="false" dataType="String" isOverridable="true">
+    <value>%%{KAFKA_TOPIC_NAME}%%</value>
+  </globalVariable>
+  <globalVariable name="/SystemName/Kafka/Username" deploymentSettable="true" serviceSettable="false" dataType="String" isOverridable="true">
+    <value>%%{KAFKA_USERNAME}%%</value>
+  </globalVariable>
+  <globalVariable name="/SystemName/Kafka/Password" deploymentSettable="true" serviceSettable="false" dataType="Password" isOverridable="true">
+    <value>%%{KAFKA_PASSWORD}%%</value>
+    <description>K8s: injected via Secret</description>
+  </globalVariable>
+  <globalVariable name="/SystemName/Database/ConnectionURL" deploymentSettable="true" serviceSettable="false" dataType="String" isOverridable="true">
+    <value>%%{DB_CONNECTION_URL}%%</value>
+    <description>K8s: injected via ConfigMap</description>
+  </globalVariable>
+  <globalVariable name="/SystemName/Database/Username" deploymentSettable="true" serviceSettable="false" dataType="String" isOverridable="true">
+    <value>%%{DB_USERNAME}%%</value>
+  </globalVariable>
+  <globalVariable name="/SystemName/Database/Password" deploymentSettable="true" serviceSettable="false" dataType="Password" isOverridable="true">
+    <value>%%{DB_PASSWORD}%%</value>
+    <description>K8s: injected via Secret</description>
+  </globalVariable>
+  <globalVariable name="/bwceLib/DefaultLogLevel" deploymentSettable="true" serviceSettable="false" dataType="String" isOverridable="true">
+    <value>INFO</value>
+    <description>K8s: INFO level in container deployments</description>
+  </globalVariable>
+  <globalVariable name="/bwceLib/LogServiceHost" deploymentSettable="true" serviceSettable="false" dataType="String" isOverridable="true">
+    <value>%%{LOG_SERVICE_HOST}%%</value>
+  </globalVariable>
+  <globalVariable name="/SystemName/MetaData/Environment" deploymentSettable="true" serviceSettable="false" dataType="String" isOverridable="true">
+    <value>%%{APP_ENVIRONMENT}%%</value>
+    <description>K8s: injected via ConfigMap (K8s/PROD/UAT)</description>
+  </globalVariable>
+</repository:globalVariables>

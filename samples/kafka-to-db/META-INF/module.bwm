@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sca:composite xmlns:sca="http://docs.oasis-open.org/ns/opencsa/sca/200912"
+               xmlns:scaext="http://www.tibco.com/xmlns/bw/scaext"
+               xmlns:rest="http://www.tibco.com/xmlns/bw/rest"
+               xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+               name="KafkaTopic_To_DB">
+  <sca:service name="KafkaIngest">
+    <scaext:binding xsi:type="rest:RestServiceBinding"
+                    path="/kafka-ingest"
+                    basePath="/api/v1">
+      <scaext:operation httpMethod="POST" operationName="ingestMessage"/>
+      <scaext:operation httpMethod="GET"  operationName="getStatus"/>
+    </scaext:binding>
+    <scaext:implementation processName="kafkatopic_to_db.module.MP_KafkaReceiver"/>
+  </sca:service>
+</sca:composite>

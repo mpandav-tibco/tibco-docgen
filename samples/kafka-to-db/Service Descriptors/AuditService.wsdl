@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+    xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+    xmlns:tns="http://example.com/audit"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    name="AuditService"
+    targetNamespace="http://example.com/audit">
+
+  <wsdl:types>
+    <xsd:schema targetNamespace="http://example.com/audit">
+      <xsd:element name="AuditLogRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="eventId"    type="xsd:string"/>
+            <xsd:element name="eventType"  type="xsd:string"/>
+            <xsd:element name="timestamp"  type="xsd:dateTime"/>
+            <xsd:element name="source"     type="xsd:string"/>
+            <xsd:element name="payload"    type="xsd:string" minOccurs="0"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="AuditLogResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="auditId"  type="xsd:string"/>
+            <xsd:element name="recorded" type="xsd:boolean"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="GetAuditTrailRequest">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="entityId"   type="xsd:string"/>
+            <xsd:element name="startDate"  type="xsd:dateTime" minOccurs="0"/>
+            <xsd:element name="endDate"    type="xsd:dateTime" minOccurs="0"/>
+            <xsd:element name="maxResults" type="xsd:int" minOccurs="0"/>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+      <xsd:element name="GetAuditTrailResponse">
+        <xsd:complexType>
+          <xsd:sequence>
+            <xsd:element name="auditRecord" minOccurs="0" maxOccurs="unbounded">
+              <xsd:complexType>
+                <xsd:sequence>
+                  <xsd:element name="auditId"    type="xsd:string"/>
+                  <xsd:element name="eventType"  type="xsd:string"/>
+                  <xsd:element name="timestamp"  type="xsd:dateTime"/>
+                  <xsd:element name="source"     type="xsd:string"/>
+                </xsd:sequence>
+              </xsd:complexType>
+            </xsd:element>
+          </xsd:sequence>
+        </xsd:complexType>
+      </xsd:element>
+    </xsd:schema>
+  </wsdl:types>
+
+  <wsdl:message name="AuditLogRequestMsg">
+    <wsdl:part name="parameters" element="tns:AuditLogRequest"/>
+  </wsdl:message>
+  <wsdl:message name="AuditLogResponseMsg">
+    <wsdl:part name="parameters" element="tns:AuditLogResponse"/>
+  </wsdl:message>
+  <wsdl:message name="GetAuditTrailRequestMsg">
+    <wsdl:part name="parameters" element="tns:GetAuditTrailRequest"/>
+  </wsdl:message>
+  <wsdl:message name="GetAuditTrailResponseMsg">
+    <wsdl:part name="parameters" element="tns:GetAuditTrailResponse"/>
+  </wsdl:message>
+
+  <wsdl:portType name="AuditServicePortType">
+    <wsdl:operation name="LogAuditEvent">
+      <wsdl:input  message="tns:AuditLogRequestMsg"/>
+      <wsdl:output message="tns:AuditLogResponseMsg"/>
+    </wsdl:operation>
+    <wsdl:operation name="GetAuditTrail">
+      <wsdl:input  message="tns:GetAuditTrailRequestMsg"/>
+      <wsdl:output message="tns:GetAuditTrailResponseMsg"/>
+    </wsdl:operation>
+  </wsdl:portType>
+
+  <wsdl:binding name="AuditServiceSoapBinding" type="tns:AuditServicePortType">
+    <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+    <wsdl:operation name="LogAuditEvent">
+      <soap:operation soapAction="http://example.com/audit/LogAuditEvent"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+    </wsdl:operation>
+    <wsdl:operation name="GetAuditTrail">
+      <soap:operation soapAction="http://example.com/audit/GetAuditTrail"/>
+      <wsdl:input><soap:body use="literal"/></wsdl:input>
+      <wsdl:output><soap:body use="literal"/></wsdl:output>
+    </wsdl:operation>
+  </wsdl:binding>
+
+  <wsdl:service name="AuditService">
+    <wsdl:port name="AuditServicePort" binding="tns:AuditServiceSoapBinding">
+      <soap:address location="http://localhost:9090/AuditService"/>
+    </wsdl:port>
+  </wsdl:service>
+
+</wsdl:definitions>

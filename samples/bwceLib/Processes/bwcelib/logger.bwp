@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpws:process exitOnStandardFault="no" name="bwcelib.logger" suppressJoinFailure="yes"
+    targetNamespace="http://xmlns.example.com/logger" xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+    xmlns:info="http://www.tibco.com/bw/process/info"
+    xmlns:tib="http://ns.tibco.com/bw/property"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <bpws:extensions>
+    <bpws:extension mustUnderstand="no" namespace="http://www.tibco.com/bw/process/info"/>
+  </bpws:extensions>
+  <info:processInfo callable="true" stateless="true" singleton="false" type="IT">
+    <info:Description>Shared logger process for writing log messages to console or REST logging service.</info:Description>
+  </info:processInfo>
+  <bpws:variables>
+    <bpws:variable name="Start" messageType="bpws:anyContent"/>
+    <bpws:variable name="End" messageType="bpws:anyContent"/>
+  </bpws:variables>
+  <bpws:flow>
+    <bpws:links>
+      <bpws:link name="StartToMapper"/>
+      <bpws:link name="MapperToLogger"/>
+      <bpws:link name="LoggerToEnd"/>
+    </bpws:links>
+    <bpws:extensionActivity>
+      <tib:receive createInstance="yes" name="Start">
+        <tib:inputBindings/>
+      </tib:receive>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:generalMapping name="prepareLogMessage">
+        <tib:inputBindings>
+          <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                          xmlns:tns="http://xmlns.example.com/logMessage"
+                          xmlns:bw="http://www.tibco.com/bw/xslt/custom-functions"
+                          version="2.0">
+            <xsl:param name="Start"/>
+            <xsl:template match="/">
+              <tns:PreparedMessage>
+                <tns:message><xsl:value-of select="$Start/message"/></tns:message>
+                <tns:severity><xsl:value-of select="($Start/logLevel, 'INFO')[1]"/></tns:severity>
+                <tns:category><xsl:value-of select="($Start/category, 'APPLICATION')[1]"/></tns:category>
+                <tns:correlationId><xsl:value-of select="$Start/correlationId"/></tns:correlationId>
+              </tns:PreparedMessage>
+            </xsl:template>
+          </xsl:stylesheet>
+        </tib:inputBindings>
+      </tib:generalMapping>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:generalMapping name="Mapper">
+        <info:Description>Transform log data with metadata (environment, service ID, log level).</info:Description>
+        <tib:inputBindings>
+          <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                          xmlns:tns="http://xmlns.example.com/logEnvelope"
+                          xmlns:bw="http://www.tibco.com/bw/xslt/custom-functions"
+                          version="2.0">
+            <xsl:param name="Start"/>
+            <xsl:param name="prepareLogMessage"/>
+            <xsl:template match="/">
+              <tns:LogEnvelope>
+                <tns:logMessage><xsl:value-of select="concat('[', $prepareLogMessage/PreparedMessage/severity, '] [', $prepareLogMessage/PreparedMessage/category, '] ', $prepareLogMessage/PreparedMessage/message)"/></tns:logMessage>
+                <tns:serviceId><xsl:value-of select="bw:getModuleProperty('/MetaData/ServiceID')"/></tns:serviceId>
+                <tns:environment><xsl:value-of select="bw:getModuleProperty('/MetaData/Environment')"/></tns:environment>
+                <tns:timestamp><xsl:value-of select="current-dateTime()"/></tns:timestamp>
+                <tns:severity><xsl:value-of select="$prepareLogMessage/PreparedMessage/severity"/></tns:severity>
+                <tns:correlationId><xsl:value-of select="$prepareLogMessage/PreparedMessage/correlationId"/></tns:correlationId>
+              </tns:LogEnvelope>
+            </xsl:template>
+          </xsl:stylesheet>
+        </tib:inputBindings>
+      </tib:generalMapping>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:activity name="FileConsoleLogger" type="com.tibco.bw.generalactivities.log.runtime.LogActivity">
+        <info:Description>Write log message to console output.</info:Description>
+        <tib:inputBindings>
+          <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                          xmlns:tns="http://xmlns.example.com/log"
+                          version="2.0">
+            <xsl:param name="Mapper"/>
+            <xsl:template match="/">
+              <tns:LogActivityInput>
+                <tns:message><xsl:value-of select="$Mapper/LogEnvelope/logMessage"/></tns:message>
+                <tns:logLevel><xsl:value-of select="$Mapper/LogEnvelope/severity"/></tns:logLevel>
+              </tns:LogActivityInput>
+            </xsl:template>
+          </xsl:stylesheet>
+        </tib:inputBindings>
+        <tib:config>
+          <tib:field name="logLevel">Info</tib:field>
+        </tib:config>
+      </tib:activity>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:activity name="InvokeLogRESTAPI" type="com.tibco.bw.sharedresource.httpclient.runtime.InvokeHTTPEndpointActivity">
+        <info:Description>POST log event to remote logging service REST API.</info:Description>
+        <tib:inputBindings>
+          <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                          xmlns:tns="http://xmlns.example.com/httpInvoke"
+                          xmlns:bw="http://www.tibco.com/bw/xslt/custom-functions"
+                          version="2.0">
+            <xsl:param name="Mapper"/>
+            <xsl:template match="/">
+              <tns:HTTPRequest>
+                <tns:endpoint><xsl:value-of select="bw:getModuleProperty('/Logging/RestApiUrl')"/></tns:endpoint>
+                <tns:headers>
+                  <tns:Authorization><xsl:value-of select="concat('Bearer ', bw:getModuleProperty('/Logging/ApiKey'))"/></tns:Authorization>
+                  <tns:Content-Type><xsl:value-of select="'application/json'"/></tns:Content-Type>
+                </tns:headers>
+                <tns:body>
+                  <tns:message><xsl:value-of select="$Mapper/LogEnvelope/logMessage"/></tns:message>
+                  <tns:timestamp><xsl:value-of select="$Mapper/LogEnvelope/timestamp"/></tns:timestamp>
+                  <tns:serviceId><xsl:value-of select="$Mapper/LogEnvelope/serviceId"/></tns:serviceId>
+                  <tns:environment><xsl:value-of select="$Mapper/LogEnvelope/environment"/></tns:environment>
+                  <tns:severity><xsl:value-of select="$Mapper/LogEnvelope/severity"/></tns:severity>
+                </tns:body>
+              </tns:HTTPRequest>
+            </xsl:template>
+          </xsl:stylesheet>
+        </tib:inputBindings>
+      </tib:activity>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:reply name="End">
+        <tib:inputBindings/>
+      </tib:reply>
+    </bpws:extensionActivity>
+  </bpws:flow>
+</bpws:process>

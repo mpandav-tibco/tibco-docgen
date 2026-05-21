@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpws:process exitOnStandardFault="no" name="bwcelib.auditFilter" suppressJoinFailure="yes"
+    targetNamespace="http://xmlns.example.com/auditFilter" xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+    xmlns:info="http://www.tibco.com/bw/process/info"
+    xmlns:tib="http://ns.tibco.com/bw/property"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <info:processInfo callable="true" stateless="true" singleton="false" type="IT">
+    <info:Description>Filters audit events based on configured criteria before forwarding to logger.</info:Description>
+  </info:processInfo>
+  <bpws:variables>
+    <bpws:variable name="Start" messageType="bpws:anyContent"/>
+    <bpws:variable name="End" messageType="bpws:anyContent"/>
+  </bpws:variables>
+  <bpws:flow>
+    <bpws:links>
+      <bpws:link name="StartToFilter"/>
+      <bpws:link name="FilterToLog"/>
+      <bpws:link name="FilterToSkip"/>
+    </bpws:links>
+    <bpws:extensionActivity>
+      <tib:receive createInstance="yes" name="Start"><tib:inputBindings/></tib:receive>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:generalMapping name="EvaluateFilter">
+        <info:Description>Evaluate filter conditions to determine if event should be logged.</info:Description>
+        <tib:inputBindings>
+          <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                          xmlns:tns="http://xmlns.example.com/auditFilter"
+                          xmlns:bw="http://www.tibco.com/bw/xslt/custom-functions"
+                          version="2.0">
+            <xsl:param name="Start"/>
+            <xsl:template match="/">
+              <tns:FilterResult>
+                <tns:shouldLog><xsl:value-of select="boolean($Start/auditLevel >= xs:integer(bw:getModuleProperty('/Audit/FilterThreshold')))"/></tns:shouldLog>
+                <tns:eventType><xsl:value-of select="$Start/eventType"/></tns:eventType>
+                <tns:correlationId><xsl:value-of select="$Start/correlationId"/></tns:correlationId>
+                <tns:auditLevel><xsl:value-of select="$Start/auditLevel"/></tns:auditLevel>
+                <tns:filterThreshold><xsl:value-of select="bw:getModuleProperty('/Audit/FilterThreshold')"/></tns:filterThreshold>
+                <tns:configuredLogLevel><xsl:value-of select="bw:getModuleProperty('/Audit/LogLevel')"/></tns:configuredLogLevel>
+              </tns:FilterResult>
+            </xsl:template>
+          </xsl:stylesheet>
+        </tib:inputBindings>
+      </tib:generalMapping>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:callProcess name="ForwardToLogger" processRef="bwcelib.auditLog">
+        <info:Description>Forward event to audit logger if filter passes.</info:Description>
+        <tib:inputBindings>
+          <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                          xmlns:tns="http://xmlns.example.com/auditLog"
+                          version="2.0">
+            <xsl:param name="Start"/>
+            <xsl:param name="EvaluateFilter"/>
+            <xsl:template match="/">
+              <tns:AuditLogInput>
+                <tns:correlationId><xsl:value-of select="$EvaluateFilter/FilterResult/correlationId"/></tns:correlationId>
+                <tns:auditType><xsl:value-of select="$EvaluateFilter/FilterResult/eventType"/></tns:auditType>
+                <tns:payload><xsl:value-of select="string($Start/payload)"/></tns:payload>
+                <tns:logLevel><xsl:value-of select="$EvaluateFilter/FilterResult/configuredLogLevel"/></tns:logLevel>
+              </tns:AuditLogInput>
+            </xsl:template>
+          </xsl:stylesheet>
+        </tib:inputBindings>
+      </tib:callProcess>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:reply name="End"><tib:inputBindings/></tib:reply>
+    </bpws:extensionActivity>
+  </bpws:flow>
+</bpws:process>

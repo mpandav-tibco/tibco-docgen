@@ -1,0 +1,20 @@
+{
+  "name": "tibco-docgen",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "cli"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "bundle": "node -e \"require('esbuild').build({entryPoints:['cli/src/index.ts'],bundle:true,platform:'node',target:'node18',outfile:'dist/tibco-docgen.js',minify:false,tsconfig:'tsconfig.base.json'}).then(()=>console.log('Bundled → dist/tibco-docgen.js')).catch(e=>{console.error(e);process.exit(1)})\"",
+    "dist": "npm run build && npm run bundle",
+    "test": "bash test.sh",
+    "test:unit": "vitest run",
+    "test:watch": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.6"
+  }
+}

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sca:scalingPackage
+    xmlns:sca="http://www.tibco.com/xmlns/sca/1.0"
+    xmlns:bw="http://ns.tibco.com/bw/pvm/sub"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <bw:subsVar>
+    <bw:pvPairs>
+      <bw:pvPair>
+        <bw:name>DB_HOST</bw:name>
+        <bw:type>String</bw:type>
+        <bw:value>localhost</bw:value>
+        <bw:description>PostgreSQL database host</bw:description>
+      </bw:pvPair>
+      <bw:pvPair>
+        <bw:name>DB_PORT</bw:name>
+        <bw:type>Integer</bw:type>
+        <bw:value>5432</bw:value>
+        <bw:description>PostgreSQL database port</bw:description>
+      </bw:pvPair>
+      <bw:pvPair>
+        <bw:name>DB_NAME</bw:name>
+        <bw:type>String</bw:type>
+        <bw:value>ordersdb</bw:value>
+        <bw:description>Database schema name</bw:description>
+      </bw:pvPair>
+      <bw:pvPair>
+        <bw:name>DB_USER</bw:name>
+        <bw:type>String</bw:type>
+        <bw:value>appuser</bw:value>
+      </bw:pvPair>
+      <bw:pvPair>
+        <bw:name>DB_PASSWORD</bw:name>
+        <bw:type>Password</bw:type>
+        <bw:value>#!kFxP7rQ2m/Aw==!</bw:value>
+      </bw:pvPair>
+      <bw:pvPair>
+        <bw:name>HTTP_PORT</bw:name>
+        <bw:type>Integer</bw:type>
+        <bw:value>8080</bw:value>
+        <bw:description>REST listener port</bw:description>
+      </bw:pvPair>
+      <bw:pvPair>
+        <bw:name>EMS_URL</bw:name>
+        <bw:type>String</bw:type>
+        <bw:value>tcp://localhost:7222</bw:value>
+        <bw:description>TIBCO EMS server URL</bw:description>
+      </bw:pvPair>
+      <bw:pvPair>
+        <bw:name>EMS_USER</bw:name>
+        <bw:type>String</bw:type>
+        <bw:value>admin</bw:value>
+      </bw:pvPair>
+      <bw:pvPair>
+        <bw:name>ORDER_EVENTS_TOPIC</bw:name>
+        <bw:type>String</bw:type>
+        <bw:value>orders.events</bw:value>
+        <bw:description>EMS topic for order lifecycle events</bw:description>
+      </bw:pvPair>
+      <bw:pvPair>
+        <bw:name>MAX_PAGE_SIZE</bw:name>
+        <bw:type>Integer</bw:type>
+        <bw:value>100</bw:value>
+        <bw:description>Maximum number of orders returned per page</bw:description>
+      </bw:pvPair>
+    </bw:pvPairs>
+  </bw:subsVar>
+</sca:scalingPackage>

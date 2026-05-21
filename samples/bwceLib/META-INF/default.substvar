@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<repository:globalVariables xmlns:repository="http://www.tibco.com/xmlns/repo/types/2002">
+  <globalVariable name="/bwceLib/LogServiceHost" deploymentSettable="false" serviceSettable="false" dataType="String" isOverridable="false">
+    <value>%%{LogServiceHost}%%</value>
+    <description>Hostname of the log service REST API</description>
+  </globalVariable>
+  <globalVariable name="/bwceLib/LogServicePort" deploymentSettable="false" serviceSettable="false" dataType="Integer" isOverridable="false">
+    <value>8080</value>
+    <description>Port of the log service REST API</description>
+  </globalVariable>
+  <globalVariable name="/bwceLib/ErrorServiceHost" deploymentSettable="false" serviceSettable="false" dataType="String" isOverridable="false">
+    <value>%%{ErrorServiceHost}%%</value>
+    <description>Hostname of the error notification service</description>
+  </globalVariable>
+  <globalVariable name="/bwceLib/ErrorServicePort" deploymentSettable="false" serviceSettable="false" dataType="Integer" isOverridable="false">
+    <value>8443</value>
+    <description>Port of the error notification service</description>
+  </globalVariable>
+  <globalVariable name="/bwceLib/ConsoleLoggingEnabled" deploymentSettable="false" serviceSettable="false" dataType="Boolean" isOverridable="true">
+    <value>true</value>
+    <description>Enable console/file logging output</description>
+  </globalVariable>
+  <globalVariable name="/bwceLib/WebserviceLoggingEnabled" deploymentSettable="false" serviceSettable="false" dataType="Boolean" isOverridable="true">
+    <value>false</value>
+    <description>Enable logging via REST web service</description>
+  </globalVariable>
+  <globalVariable name="/bwceLib/DefaultLogLevel" deploymentSettable="true" serviceSettable="false" dataType="String" isOverridable="true">
+    <value>INFO</value>
+    <description>Default log level (DEBUG, INFO, WARN, ERROR)</description>
+  </globalVariable>
+</repository:globalVariables>

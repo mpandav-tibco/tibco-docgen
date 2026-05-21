@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpws:process exitOnStandardFault="no" name="bwcelib.internalErrorLogger" suppressJoinFailure="yes"
+    targetNamespace="http://xmlns.example.com/internalErrorLogger" xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+    xmlns:info="http://www.tibco.com/bw/process/info"
+    xmlns:tib="http://ns.tibco.com/bw/property"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <info:processInfo callable="true" stateless="true" singleton="false" type="IT">
+    <info:Description>Logs internal framework errors that occur within the shared library itself.</info:Description>
+  </info:processInfo>
+  <bpws:variables>
+    <bpws:variable name="Start" messageType="bpws:anyContent"/>
+    <bpws:variable name="End" messageType="bpws:anyContent"/>
+  </bpws:variables>
+  <bpws:flow>
+    <bpws:extensionActivity>
+      <tib:receive createInstance="yes" name="Start"><tib:inputBindings/></tib:receive>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:generalMapping name="MapInternalError">
+        <info:Description>Map internal error details to error schema.</info:Description>
+        <tib:inputBindings>
+          <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                          xmlns:tns="http://xmlns.example.com/internalError"
+                          xmlns:bw="http://www.tibco.com/bw/xslt/custom-functions"
+                          version="2.0">
+            <xsl:param name="Start"/>
+            <xsl:template match="/">
+              <tns:InternalErrorData>
+                <tns:errorCode><xsl:value-of select="$Start/fault/faultCode"/></tns:errorCode>
+                <tns:errorMessage><xsl:value-of select="$Start/fault/faultMessage"/></tns:errorMessage>
+                <tns:errorSource><xsl:value-of select="$Start/fault/faultSource"/></tns:errorSource>
+                <tns:stackTrace><xsl:value-of select="$Start/fault/stackTrace"/></tns:stackTrace>
+                <tns:timestamp><xsl:value-of select="current-dateTime()"/></tns:timestamp>
+                <tns:serviceId><xsl:value-of select="bw:getModuleProperty('/MetaData/ServiceID')"/></tns:serviceId>
+                <tns:correlationId><xsl:value-of select="$Start/correlationId"/></tns:correlationId>
+                <tns:severity><xsl:value-of select="'INTERNAL_ERROR'"/></tns:severity>
+              </tns:InternalErrorData>
+            </xsl:template>
+          </xsl:stylesheet>
+        </tib:inputBindings>
+      </tib:generalMapping>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:activity name="ConsoleLog" type="com.tibco.bw.generalactivities.log.runtime.LogActivity">
+        <info:Description>Write internal error to console log.</info:Description>
+        <tib:inputBindings>
+          <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                          xmlns:tns="http://xmlns.example.com/log"
+                          version="2.0">
+            <xsl:param name="MapInternalError"/>
+            <xsl:template match="/">
+              <tns:LogParams>
+                <tns:message><xsl:value-of select="concat('[INTERNAL] ', $MapInternalError/InternalErrorData/errorCode, ': ', $MapInternalError/InternalErrorData/errorMessage)"/></tns:message>
+                <tns:logLevel><xsl:value-of select="'ERROR'"/></tns:logLevel>
+              </tns:LogParams>
+            </xsl:template>
+          </xsl:stylesheet>
+        </tib:inputBindings>
+        <tib:config><tib:field name="logLevel">ERROR</tib:field></tib:config>
+      </tib:activity>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:reply name="End"><tib:inputBindings/></tib:reply>
+    </bpws:extensionActivity>
+  </bpws:flow>
+</bpws:process>

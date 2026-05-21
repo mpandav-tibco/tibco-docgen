@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Order Management Service
+Bundle-SymbolicName: com.example.ordermgmt
+Bundle-Version: 2.1.0
+TIBCO-BW-Edition: BW
+TIBCO-BW-Description: REST API for managing customer orders backed by PostgreSQL and EMS
+Require-Bundle: com.tibco.bw.palette.restx;bundle-version="[6.5,7.0)";visibility:=reexport,
+ com.tibco.bw.palette.rest;bundle-version="[6.5,7.0)";visibility:=reexport,
+ com.tibco.bw.palette.jdbc;bundle-version="[6.5,7.0)";visibility:=reexport,
+ com.tibco.bw.palette.log;bundle-version="[6.5,7.0)";visibility:=reexport,
+ com.tibco.bw.palette.ems;bundle-version="[6.5,7.0)";visibility:=reexport,
+ com.tibco.bw.palette.generalactivities;bundle-version="[6.5,7.0)";visibility:=reexport

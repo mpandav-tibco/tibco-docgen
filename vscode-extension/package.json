@@ -1,0 +1,163 @@
+{
+  "name": "tibco-docgen",
+  "displayName": "TIBCO DocGen",
+  "description": "Generate HTML, PDF, Markdown, and JSON documentation for TIBCO Flogo, BusinessWorks 6 / BWCE, and EMS applications — with flow diagrams, QA analysis, and MCP agent integration",
+  "version": "1.0.0",
+  "publisher": "tibco",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mpandav-tibco/tibco-docgen"
+  },
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Other", "Visualization"],
+  "keywords": ["tibco", "flogo", "bw6", "bwce", "ems", "documentation", "pdf", "mcp", "diagram"],
+  "icon": "resources/icon.png",
+  "activationEvents": [
+    "onStartupFinished",
+    "workspaceContains:**/*.flogo",
+    "workspaceContains:**/MANIFEST.MF",
+    "workspaceContains:**/*.bwp"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "tibco-docgen.generateDocs",
+        "title": "DocGen: Generate Documentation",
+        "icon": "$(book)"
+      },
+      {
+        "command": "tibco-docgen.generateFromExplorer",
+        "title": "Generate DocGen Documentation",
+        "icon": "$(book)"
+      },
+      {
+        "command": "tibco-docgen.openOutput",
+        "title": "DocGen: Open Generated Docs",
+        "icon": "$(browser)"
+      },
+      {
+        "command": "tibco-docgen.showOutputChannel",
+        "title": "DocGen: Show Output Log"
+      },
+      {
+        "command": "tibco-docgen.generateWorkspace",
+        "title": "DocGen: Generate Docs for All Apps in Workspace"
+      },
+      {
+        "command": "tibco-docgen.generateEMSDocs",
+        "title": "DocGen: Generate EMS Documentation (Live Server)",
+        "icon": "$(server-process)"
+      },
+      {
+        "command": "tibco-docgen.copyMcpConfig",
+        "title": "DocGen: Copy MCP Server Config to Clipboard",
+        "icon": "$(clippy)"
+      },
+      {
+        "command": "tibco-docgen.addMcpServer",
+        "title": "DocGen: Add MCP Server to VS Code (1.99+)",
+        "icon": "$(plug)"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "tibco-docgen.generateFromExplorer",
+          "when": "resourceExtname == .flogo",
+          "group": "z_tibco@1"
+        },
+        {
+          "command": "tibco-docgen.generateFromExplorer",
+          "when": "resourceExtname == .ear",
+          "group": "z_tibco@1"
+        },
+        {
+          "command": "tibco-docgen.generateFromExplorer",
+          "when": "resourceExtname == .zip",
+          "group": "z_tibco@1"
+        },
+        {
+          "command": "tibco-docgen.generateFromExplorer",
+          "when": "explorerResourceIsFolder",
+          "group": "z_tibco@1"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "tibco-docgen.generateDocs",
+          "when": "resourceExtname == .flogo",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "tibco-docgen.generateFromExplorer",
+          "when": "false"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "TIBCO DocGen",
+      "properties": {
+        "tibco-docgen.outputDirectory": {
+          "type": "string",
+          "default": "",
+          "description": "Output directory for generated documentation. Leave empty to use 'docgen-out' as a sibling to the input."
+        },
+        "tibco-docgen.format": {
+          "type": "string",
+          "enum": ["html", "md", "json", "pdf", "all"],
+          "enumDescriptions": [
+            "HTML documentation only",
+            "Markdown documentation only (includes SVG diagrams)",
+            "JSON model only",
+            "PDF document (requires Chrome or Edge — includes cover page, TOC, flow diagrams)",
+            "All formats: HTML + Markdown + JSON + PDF"
+          ],
+          "default": "all",
+          "description": "Output format. Each format is written to its own subdirectory (html/, markdown/, json/, pdf/)."
+        },
+        "tibco-docgen.cliPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to the tibco-docgen CLI script (index.js). Auto-detected if empty."
+        },
+        "tibco-docgen.openAfterGenerate": {
+          "type": "boolean",
+          "default": true,
+          "description": "Open the generated index.html in the browser after generation."
+        },
+        "tibco-docgen.customExtensionsPath": {
+          "type": "string",
+          "default": "",
+          "description": "Path to custom Flogo extensions directory for activity icon resolution."
+        }
+      }
+    },
+    "keybindings": [
+      {
+        "command": "tibco-docgen.generateDocs",
+        "key": "ctrl+shift+d",
+        "mac": "cmd+shift+d",
+        "when": "resourceExtname == .flogo"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "watch": "tsc -p tsconfig.json --watch",
+    "copy-cli": "node -e \"const fs=require('fs');fs.mkdirSync('cli',{recursive:true});fs.copyFileSync('../dist/tibco-docgen.js','cli/tibco-docgen.js');console.log('Copied CLI → cli/tibco-docgen.js')\"",
+    "package": "npm run build && npm run copy-cli && vsce package --no-dependencies",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^2.24.0",
+    "typescript": "^5.4.0"
+  }
+}

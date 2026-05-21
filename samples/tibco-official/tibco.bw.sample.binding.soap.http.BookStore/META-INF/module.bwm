@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sca:composite xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:BW="http://xsd.tns.tibco.com/amf/models/sca/implementationtype/BW" xmlns:GetBooksImpl="http://www.example.com/interface/books/GetBooksImpl" xmlns:SOAPServiceBinding="http://www.tibco.com/9ceb26372d01473db16ce592593ebc25/SOAPServiceBinding" xmlns:XMLSchema="http://www.w3.org/2001/XMLSchema" xmlns:axis2="http://xsd.tns.tibco.com/bw/models/binding/soap/axis2" xmlns:books="http://www.example.com/xsd/books" xmlns:compositeext="http://schemas.tibco.com/amx/3.0/compositeext" xmlns:sca="http://www.osoa.org/xmlns/sca/1.0" xmlns:scact="http://xsd.tns.tibco.com/amf/models/sca/componentType" xmlns:scaext="http://xsd.tns.tibco.com/amf/models/sca/extensions" xmi:id="_vxpEkNZXEeqCUbba0rYdKQ" targetNamespace="http://tns.tibco.com/bw/composite/tibco.bw.sample.binding.soap.http.BookStore" name="tibco.bw.sample.binding.soap.http.BookStore" compositeext:version="1.0.0" compositeext:formatVersion="2">
+  <sca:service xmi:id="_D290ENZYEeqCUbba0rYdKQ" name="GetBooksByAuthor" promote="ComponentQueryBooksByAuthorProvider/GetBooksByAuthor">
+    <sca:interface.wsdl xmi:id="_D3O50NZYEeqCUbba0rYdKQ" interface="http://www.example.com/interface/books/GetBooksImpl#wsdl.interface(GetBooksByAuthor)" scaext:wsdlLocation="../Service%20Descriptors/BooksService.wsdl"/>
+    <scaext:binding xsi:type="axis2:SOAPServiceBinding" xmi:id="_MJ1CINZYEeqCUbba0rYdKQ" name="SOAPServiceBinding" targetNamespace="http://www.tibco.com/2868c788317240d6aebd3e7393391c90/SOAPServiceBinding" portTypeQName="GetBooksImpl:GetBooksByAuthor" transportBindingType="HTTP" attachmentStyle="SwA" modelVersion="1.2.0" portTypeWSDLLocation="platform:/resource/tibco.bw.sample.binding.soap.http.BookStore/Service%20Descriptors/BooksService.wsdl">
+      <bindingType xmi:id="_MJ1pMNZYEeqCUbba0rYdKQ"/>
+      <inboundConfiguration xsi:type="axis2:HttpTransportConfiguration" xmi:id="_MWdI4NZYEeqCUbba0rYdKQ" endpointURI="/SOAPServiceBinding/getBooksByAuthor/" httpConnector="tibco.bw.sample.binding.soap.http.BookStore.HTTPConnectorResource"/>
+      <operationConfiguration xmi:id="_MJ2QQNZYEeqCUbba0rYdKQ" operationName="GetBooks" action="GetBooks" actionNeeded="true">
+        <bindingType xmi:id="_MJ2QQdZYEeqCUbba0rYdKQ"/>
+        <messageConfiguration xmi:id="_MJ2QQtZYEeqCUbba0rYdKQ" messageQName="GetBooksImpl:GetBooksByAuthor" wsdlLocation="platform:/resource/tibco.bw.sample.binding.soap.http.BookStore/Service%20Descriptors/BooksService.wsdl">
+          <messagePartConfigurations xsi:type="axis2:BodyPartConfiguration" xmi:id="_MJ2QQ9ZYEeqCUbba0rYdKQ" partName="author" partElementName="books:Author"/>
+        </messageConfiguration>
+        <messageConfiguration xmi:id="_MJ2QRNZYEeqCUbba0rYdKQ" messageQName="GetBooksImpl:GetBooksOut" messageDirection="OUTPUT" wsdlLocation="platform:/resource/tibco.bw.sample.binding.soap.http.BookStore/Service%20Descriptors/BooksService.wsdl">
+          <messagePartConfigurations xsi:type="axis2:BodyPartConfiguration" xmi:id="_MJ2QRdZYEeqCUbba0rYdKQ" partName="message" partElementName="books:BookStore"/>
+        </messageConfiguration>
+        <context xmi:id="_MJ23UNZYEeqCUbba0rYdKQ">
+          <inputMapping xmi:id="_MJ23UdZYEeqCUbba0rYdKQ"/>
+          <outputMapping xmi:id="_MJ23UtZYEeqCUbba0rYdKQ" direction="OUTPUT"/>
+        </context>
+      </operationConfiguration>
+    </scaext:binding>
+    <scact:bindingAdjunct xmi:id="_MJ3eYNZYEeqCUbba0rYdKQ" bindingName="SOAPServiceBinding"/>
+  </sca:service>
+  <sca:reference xmi:id="_H5E-oNZYEeqCUbba0rYdKQ" multiplicity="0..1" name="GetBooksByAuthor" wiredByImpl="false" promote="ComponentBookStoreServiceClient/GetBooksByAuthor">
+    <sca:interface.wsdl xmi:id="_H5FlsNZYEeqCUbba0rYdKQ" interface="http://www.example.com/interface/books/GetBooksImpl#wsdl.interface(GetBooksByAuthor)" scaext:wsdlLocation="../Service%20Descriptors/BooksService.wsdl"/>
+    <scaext:binding xsi:type="axis2:SOAPReferenceBinding" xmi:id="_LoR0QNZYEeqCUbba0rYdKQ" name="SOAPReferenceBinding" portTypeQName="GetBooksImpl:GetBooksByAuthor" transportBindingType="HTTP" modelVersion="1.2.0" portTypeWSDLLocation="platform:/resource/tibco.bw.sample.binding.soap.http.BookStore/Service%20Descriptors/BooksService.wsdl" serviceQName="SOAPServiceBinding:GetBooksByAuthor" portName="GetBooksByAuthorSOAP" serviceBindingQName="SOAPServiceBinding:SOAPServiceBinding" locationURI="http://localhost:11006/SOAPServiceBinding/getBooksByAuthor/" wsdlLocation="platform:/resource/tibco.bw.sample.binding.soap.http.BookStore/Service%20Descriptors/BooksService_gen1.wsdl">
+      <bindingType xmi:id="_LodacNZYEeqCUbba0rYdKQ" style="DOCUMENT"/>
+      <operationConfiguration xmi:id="_LopAoNZYEeqCUbba0rYdKQ" operationName="GetBooks" action="GetBooks">
+        <bindingType xmi:id="_LopAodZYEeqCUbba0rYdKQ" style="DOCUMENT"/>
+        <messageConfiguration xmi:id="_LopAotZYEeqCUbba0rYdKQ" messageQName="GetBooksImpl:GetBooksByAuthor" wsdlLocation="platform:/resource/tibco.bw.sample.binding.soap.http.BookStore/Service%20Descriptors/BooksService.wsdl">
+          <messagePartConfigurations xsi:type="axis2:BodyPartConfiguration" xmi:id="_LopAo9ZYEeqCUbba0rYdKQ" partName="author" partElementName="books:Author" encoding="literal"/>
+        </messageConfiguration>
+        <messageConfiguration xmi:id="_LopApNZYEeqCUbba0rYdKQ" messageQName="GetBooksImpl:GetBooksOut" messageDirection="OUTPUT" wsdlLocation="platform:/resource/tibco.bw.sample.binding.soap.http.BookStore/Service%20Descriptors/BooksService.wsdl">
+          <messagePartConfigurations xsi:type="axis2:BodyPartConfiguration" xmi:id="_LopApdZYEeqCUbba0rYdKQ" partName="message" partElementName="books:BookStore" encoding="literal"/>
+        </messageConfiguration>
+        <context xmi:id="_LopAptZYEeqCUbba0rYdKQ">
+          <inputMapping xmi:id="_LopAp9ZYEeqCUbba0rYdKQ"/>
+          <outputMapping xmi:id="_LopAqNZYEeqCUbba0rYdKQ" direction="OUTPUT"/>
+        </context>
+      </operationConfiguration>
+      <outboundConfiguration xsi:type="axis2:HttpTransportConfiguration" xmi:id="_Lo2cANZYEeqCUbba0rYdKQ"/>
+    </scaext:binding>
+    <scact:bindingAdjunct xmi:id="_Lo5fUNZYEeqCUbba0rYdKQ" bindingName="SOAPReferenceBinding"/>
+  </sca:reference>
+  <sca:property xmi:id="_wUZzYNZXEeqCUbba0rYdKQ" name="BW.DEPLOYMENTUNIT.TYPE" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_wU6wwNZXEeqCUbba0rYdKQ" name="BW.APPNODE.NAME" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_wVCFgNZXEeqCUbba0rYdKQ" name="BW.DEPLOYMENTUNIT.NAME" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_wVG-ANZXEeqCUbba0rYdKQ" name="BW.HOST.NAME" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_wVMdkNZXEeqCUbba0rYdKQ" name="BW.DOMAIN.NAME" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_wVRWENZXEeqCUbba0rYdKQ" name="BW.DEPLOYMENTUNIT.VERSION" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_wVW1oNZXEeqCUbba0rYdKQ" name="BW.APPSPACE.NAME" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_wVeKYNZXEeqCUbba0rYdKQ" name="BW.MODULE.VERSION" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_wVjp8NZXEeqCUbba0rYdKQ" name="BW.MODULE.NAME" type="XMLSchema:string" scalable="true"/>
+  <sca:property xmi:id="_8QcsMNbnEeqKVeYdq6ZH6Q" name="HOST" type="XMLSchema:string" publicAccess="true" scalable="true"/>
+  <sca:property xmi:id="_9UZcgNbnEeqKVeYdq6ZH6Q" name="OUTPUT_FILE" type="XMLSchema:string" publicAccess="true" scalable="true"/>
+  <sca:property xmi:id="_-LIQMNbnEeqKVeYdq6ZH6Q" name="PORT" type="XMLSchema:int" scaext:simpleValue="0" publicAccess="true" scalable="true"/>
+  <sca:property xmi:id="_AneW0NboEeqKVeYdq6ZH6Q" name="ReadBookStoreXML" type="XMLSchema:string" publicAccess="true" scalable="true"/>
+  <sca:component xmi:id="_0ubHoNZXEeqCUbba0rYdKQ" name="ComponentBookStoreServiceClient" compositeext:version="1.0.0.qualifier">
+    <scaext:implementation xsi:type="BW:BWComponentImplementation" xmi:id="_0uc80NZXEeqCUbba0rYdKQ" processName="tibco.bw.sample.binding.soap.http.bookstore.BookStoreServiceClient"/>
+    <sca:reference xmi:id="_H5DJcNZYEeqCUbba0rYdKQ" name="GetBooksByAuthor">
+      <sca:interface.wsdl xmi:id="_H5DwgNZYEeqCUbba0rYdKQ" interface="http://www.example.com/interface/books/GetBooksImpl#wsdl.interface(GetBooksByAuthor)" scaext:wsdlLocation="../Service%20Descriptors/BooksService.wsdl"/>
+    </sca:reference>
+  </sca:component>
+  <sca:component xmi:id="_2my-gNZXEeqCUbba0rYdKQ" name="ComponentQueryBooksByAuthorProvider" compositeext:version="1.0.0.qualifier">
+    <scaext:implementation xsi:type="BW:BWComponentImplementation" xmi:id="_2my-gdZXEeqCUbba0rYdKQ" processName="tibco.bw.sample.binding.soap.http.bookstore.QueryBooksByAuthorProvider"/>
+    <sca:service xmi:id="_D2hIINZYEeqCUbba0rYdKQ" name="GetBooksByAuthor">
+      <sca:interface.wsdl xmi:id="_D2jkYNZYEeqCUbba0rYdKQ" interface="http://www.example.com/interface/books/GetBooksImpl#wsdl.interface(GetBooksByAuthor)" scaext:wsdlLocation="../Service%20Descriptors/BooksService.wsdl"/>
+    </sca:service>
+  </sca:component>
+</sca:composite>

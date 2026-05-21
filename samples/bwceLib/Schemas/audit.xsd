@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    targetNamespace="http://www.example.org/audit"
+    xmlns:tns="http://www.example.org/audit"
+    elementFormDefault="qualified">
+
+  <xsd:simpleType name="logLevelType">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="DEBUG"/>
+      <xsd:enumeration value="INFO"/>
+      <xsd:enumeration value="WARN"/>
+      <xsd:enumeration value="ERROR"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+
+  <xsd:complexType name="metaDataType">
+    <xsd:sequence>
+      <xsd:element name="interfaceID" type="xsd:string" minOccurs="0"/>
+      <xsd:element name="scenarioID" type="xsd:string" minOccurs="0"/>
+      <xsd:element name="sourceSystem" type="xsd:string" minOccurs="0"/>
+      <xsd:element name="targetSystem" type="xsd:string" minOccurs="0"/>
+      <xsd:element name="environment" type="xsd:string" minOccurs="0"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="auditStartType">
+    <xsd:sequence>
+      <xsd:element name="correlationID" type="xsd:string"/>
+      <xsd:element name="timestamp" type="xsd:string"/>
+      <xsd:element name="payload" type="xsd:string" minOccurs="0"/>
+      <xsd:element name="metadata" type="tns:metaDataType" minOccurs="0"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="logEventType">
+    <xsd:sequence>
+      <xsd:element name="correlationID" type="xsd:string"/>
+      <xsd:element name="stage" type="xsd:string"/>
+      <xsd:element name="logMessage" type="xsd:string" minOccurs="0"/>
+      <xsd:element name="payload" type="xsd:string" minOccurs="0"/>
+      <xsd:element name="timestamp" type="xsd:string"/>
+      <xsd:element name="logLevel" type="tns:logLevelType" minOccurs="0"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:complexType name="errorEventType">
+    <xsd:sequence>
+      <xsd:element name="correlationID" type="xsd:string"/>
+      <xsd:element name="errorMessage" type="xsd:string"/>
+      <xsd:element name="errorCode" type="xsd:string" minOccurs="0"/>
+      <xsd:element name="stackTrace" type="xsd:string" minOccurs="0" maxOccurs="unbounded"/>
+      <xsd:element name="isRecoverable" type="xsd:boolean" minOccurs="0"/>
+      <xsd:element name="timestamp" type="xsd:string"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:element name="auditStart" type="tns:auditStartType"/>
+  <xsd:element name="auditLog" type="tns:logEventType"/>
+  <xsd:element name="auditError" type="tns:errorEventType"/>
+  <xsd:element name="log" type="tns:logEventType"/>
+  <xsd:element name="error" type="tns:errorEventType"/>
+</xsd:schema>

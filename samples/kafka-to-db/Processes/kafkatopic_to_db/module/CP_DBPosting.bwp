@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpws:process exitOnStandardFault="no"
+    name="kafkatopic_to_db.module.CP_DBPosting"
+    suppressJoinFailure="yes"
+    targetNamespace="http://xmlns.example.com/20220811110740"
+    variableAccessSerializable="yes"
+    xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+    xmlns:tib="http://ns.tibco.com/bw/property"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <bpws:sequence>
+    <bpws:extensionActivity>
+      <tib:mapper name="MapInput"
+          activityDisplayName="Map Input Data">
+        <tib:inputBindings>
+          <xsl:stylesheet
+              xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+              xmlns:tns="http://xmlns.example.com/db/record"
+              xmlns:inp="http://xmlns.example.com/dbposting"
+              xmlns:bw="http://ns.tibco.com/bw/function"
+              version="2.0">
+            <xsl:param name="inputData"/>
+            <xsl:template name="MapInput-input" match="/">
+              <tns:DBRecord>
+                <tns:ORDER_KEY><xsl:value-of select="$inputData/inp:DBPostingInput/inp:messageKey"/></tns:ORDER_KEY>
+                <tns:MESSAGE_BODY><xsl:value-of select="$inputData/inp:DBPostingInput/inp:messageValue"/></tns:MESSAGE_BODY>
+                <tns:KAFKA_TOPIC><xsl:value-of select="$inputData/inp:DBPostingInput/inp:topicName"/></tns:KAFKA_TOPIC>
+                <tns:KAFKA_PARTITION><xsl:value-of select="$inputData/inp:DBPostingInput/inp:partition"/></tns:KAFKA_PARTITION>
+                <tns:KAFKA_OFFSET><xsl:value-of select="$inputData/inp:DBPostingInput/inp:offset"/></tns:KAFKA_OFFSET>
+                <tns:RECEIVED_AT><xsl:value-of select="$inputData/inp:DBPostingInput/inp:receivedTimestamp"/></tns:RECEIVED_AT>
+                <tns:INTERFACE_ID><xsl:value-of select="$inputData/inp:DBPostingInput/inp:interfaceId"/></tns:INTERFACE_ID>
+                <tns:SCENARIO_ID><xsl:value-of select="bw:getModuleProperty('/SystemName/MetaData/ScenarioID')"/></tns:SCENARIO_ID>
+                <tns:TARGET_SYSTEM><xsl:value-of select="bw:getModuleProperty('/SystemName/MetaData/TargetSystem')"/></tns:TARGET_SYSTEM>
+                <tns:PROCESSED_AT><xsl:value-of select="current-dateTime()"/></tns:PROCESSED_AT>
+                <tns:DB_SCHEMA><xsl:value-of select="bw:getModuleProperty('/SystemName/Database/DBSchema')"/></tns:DB_SCHEMA>
+              </tns:DBRecord>
+            </xsl:template>
+          </xsl:stylesheet>
+        </tib:inputBindings>
+      </tib:mapper>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:DataMerger name="KafkaDataPost"
+          activityDisplayName="ADB Data Merger"
+          connectionRef="kafkatopic_to_db.module.ADBConfigurationResource"
+          mergerRef="DBMerger1"
+          batchSize="%%{/SystemName/Database/BatchSize}%%"
+          maxConnections="%%{/SystemName/Database/MaxConnections}%%"/>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:log name="AuditLog"
+          activityDisplayName="Audit Log"
+          logLevel="Info"
+          message="Record inserted into ORDER_TABLE: ORDER_KEY={$MapInput/tns:DBRecord/tns:ORDER_KEY}, OFFSET={$MapInput/tns:DBRecord/tns:KAFKA_OFFSET}"/>
+    </bpws:extensionActivity>
+  </bpws:sequence>
+  <bpws:faultHandlers>
+    <bpws:catch>
+      <bpws:sequence>
+        <bpws:extensionActivity>
+          <tib:log name="LogDBError"
+              activityDisplayName="Log DB Error"
+              logLevel="Error"
+              message="DB insertion failed for ORDER_TABLE: {fault.detail}"/>
+        </bpws:extensionActivity>
+        <bpws:throw name="RethrowError"
+            activityDisplayName="Rethrow Error"
+            faultName="DBPostingFault"/>
+      </bpws:sequence>
+    </bpws:catch>
+  </bpws:faultHandlers>
+</bpws:process>

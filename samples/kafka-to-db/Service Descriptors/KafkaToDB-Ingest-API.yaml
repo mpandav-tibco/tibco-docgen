@@ -1,0 +1,106 @@
+openapi: "3.0.0"
+info:
+  title: KafkaToDB Ingest API
+  version: "1.0.0"
+  description: REST API for triggering Kafka-to-DB ingestion operations and monitoring pipeline status.
+  contact:
+    name: Platform Engineering
+    email: platform@example.com
+servers:
+  - url: http://localhost:8080
+    description: Local development
+  - url: https://api.example.com
+    description: Production
+basePath: /api/v1
+tags:
+  - name: Ingest
+    description: Kafka message ingestion operations
+  - name: Status
+    description: Pipeline health and monitoring
+paths:
+  /ingest/trigger:
+    post:
+      tags: [Ingest]
+      summary: Trigger manual ingestion batch
+      operationId: triggerIngest
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                topic:
+                  type: string
+                  description: Kafka topic to consume from
+                  example: "orders.raw"
+                maxRecords:
+                  type: integer
+                  description: Maximum records to consume in this batch
+                  example: 1000
+      responses:
+        "202":
+          description: Ingestion batch accepted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  batchId:
+                    type: string
+                  status:
+                    type: string
+        "400":
+          description: Bad request
+        "500":
+          description: Internal server error
+  /ingest/status/{batchId}:
+    get:
+      tags: [Status]
+      summary: Get status of an ingestion batch
+      operationId: getIngestStatus
+      parameters:
+        - name: batchId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Batch status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  batchId:
+                    type: string
+                  status:
+                    type: string
+                    enum: [RUNNING, COMPLETED, FAILED]
+                  recordsProcessed:
+                    type: integer
+                  errors:
+                    type: integer
+        "404":
+          description: Batch not found
+  /health:
+    get:
+      tags: [Status]
+      summary: Health check endpoint
+      operationId: healthCheck
+      responses:
+        "200":
+          description: Service is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: UP
+                  kafkaConnected:
+                    type: boolean
+                  dbConnected:
+                    type: boolean

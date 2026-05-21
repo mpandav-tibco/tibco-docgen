@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpws:process exitOnStandardFault="no" name="bwcelib.unexpectedAuditError" suppressJoinFailure="yes"
+    targetNamespace="http://xmlns.example.com/unexpectedAuditError" xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+    xmlns:info="http://www.tibco.com/bw/process/info"
+    xmlns:tib="http://ns.tibco.com/bw/property"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <info:processInfo callable="true" stateless="true" singleton="false" type="IT">
+    <info:Description>Handles unexpected errors in audit processing that cannot be classified by standard error categories.</info:Description>
+  </info:processInfo>
+  <bpws:variables>
+    <bpws:variable name="Start" messageType="bpws:anyContent"/>
+    <bpws:variable name="End" messageType="bpws:anyContent"/>
+  </bpws:variables>
+  <bpws:flow>
+    <bpws:extensionActivity>
+      <tib:receive createInstance="yes" name="Start"><tib:inputBindings/></tib:receive>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:generalMapping name="MapUnexpectedError">
+        <info:Description>Map unexpected error details for audit error schema.</info:Description>
+        <tib:inputBindings>
+          <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                          xmlns:tns="http://xmlns.example.com/audit"
+                          xmlns:bw="http://www.tibco.com/bw/xslt/custom-functions"
+                          version="2.0">
+            <xsl:param name="Start"/>
+            <xsl:template match="/">
+              <tns:UnexpectedErrorEvent>
+                <tns:errorCode><xsl:value-of select="'UNEXPECTED_AUDIT_ERROR'"/></tns:errorCode>
+                <tns:errorMessage><xsl:value-of select="$Start/fault/message"/></tns:errorMessage>
+                <tns:originalFaultName><xsl:value-of select="$Start/fault/faultName"/></tns:originalFaultName>
+                <tns:correlationId><xsl:value-of select="$Start/correlationId"/></tns:correlationId>
+                <tns:timestamp><xsl:value-of select="current-dateTime()"/></tns:timestamp>
+                <tns:serviceId><xsl:value-of select="bw:getModuleProperty('/MetaData/ServiceID')"/></tns:serviceId>
+                <tns:stackTrace><xsl:value-of select="$Start/fault/stackTrace"/></tns:stackTrace>
+                <tns:severity><xsl:value-of select="'CRITICAL'"/></tns:severity>
+              </tns:UnexpectedErrorEvent>
+            </xsl:template>
+          </xsl:stylesheet>
+        </tib:inputBindings>
+      </tib:generalMapping>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:callProcess name="LogAuditError" processRef="bwcelib.auditError">
+        <info:Description>Forward to audit error process for logging.</info:Description>
+        <tib:inputBindings>
+          <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                          xmlns:tns="http://xmlns.example.com/auditError"
+                          version="2.0">
+            <xsl:param name="MapUnexpectedError"/>
+            <xsl:template match="/">
+              <tns:AuditErrorInput>
+                <tns:correlationId><xsl:value-of select="$MapUnexpectedError/UnexpectedErrorEvent/correlationId"/></tns:correlationId>
+                <tns:fault>
+                  <tns:errorCode><xsl:value-of select="$MapUnexpectedError/UnexpectedErrorEvent/errorCode"/></tns:errorCode>
+                  <tns:errorMessage><xsl:value-of select="$MapUnexpectedError/UnexpectedErrorEvent/errorMessage"/></tns:errorMessage>
+                  <tns:faultName><xsl:value-of select="$MapUnexpectedError/UnexpectedErrorEvent/originalFaultName"/></tns:faultName>
+                  <tns:stackTrace><xsl:value-of select="$MapUnexpectedError/UnexpectedErrorEvent/stackTrace"/></tns:stackTrace>
+                  <tns:recoverable><xsl:value-of select="'false'"/></tns:recoverable>
+                </tns:fault>
+              </tns:AuditErrorInput>
+            </xsl:template>
+          </xsl:stylesheet>
+        </tib:inputBindings>
+      </tib:callProcess>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:callProcess name="LogInternalError" processRef="bwcelib.internalErrorLogger">
+        <info:Description>Also log as internal error for framework diagnostics.</info:Description>
+        <tib:inputBindings>
+          <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                          xmlns:tns="http://xmlns.example.com/internalErrorLogger"
+                          version="2.0">
+            <xsl:param name="MapUnexpectedError"/>
+            <xsl:template match="/">
+              <tns:InternalErrorInput>
+                <tns:fault>
+                  <tns:faultCode><xsl:value-of select="$MapUnexpectedError/UnexpectedErrorEvent/errorCode"/></tns:faultCode>
+                  <tns:faultMessage><xsl:value-of select="$MapUnexpectedError/UnexpectedErrorEvent/errorMessage"/></tns:faultMessage>
+                  <tns:faultSource><xsl:value-of select="'bwcelib.unexpectedAuditError'"/></tns:faultSource>
+                  <tns:stackTrace><xsl:value-of select="$MapUnexpectedError/UnexpectedErrorEvent/stackTrace"/></tns:stackTrace>
+                </tns:fault>
+                <tns:correlationId><xsl:value-of select="$MapUnexpectedError/UnexpectedErrorEvent/correlationId"/></tns:correlationId>
+              </tns:InternalErrorInput>
+            </xsl:template>
+          </xsl:stylesheet>
+        </tib:inputBindings>
+      </tib:callProcess>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:reply name="End"><tib:inputBindings/></tib:reply>
+    </bpws:extensionActivity>
+  </bpws:flow>
+</bpws:process>

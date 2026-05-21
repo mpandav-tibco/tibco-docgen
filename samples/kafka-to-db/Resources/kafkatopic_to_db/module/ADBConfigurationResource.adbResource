@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jndi:namedResource xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:adbplugin="http://ns.tibco.com/bw/sharedresource/adbplugin"
+    xmlns:jdbc="http://xsd.tns.tibco.com/amf/models/sharedresource/jdbc"
+    xmlns:jndi="http://xsd.tns.tibco.com/amf/models/sharedresource/jndi"
+    xmi:id="_JpcDIcxZEe2nyZrTaGEi-g"
+    name="kafkatopic_to_db.module.ADBConfigurationResource"
+    type="adbplugin:ADBPluginConnection">
+  <jndi:reference xmi:id="_0PpdsNgiEe2ShomLyFYOyg"
+      key="jdbcconncetion"
+      type="jdbc:JdbcDataSource"
+      value="kafkatopic_to_db.module.JDBCConnectionResource"/>
+  <jndi:configuration xsi:type="adbplugin:ADBPluginConnection" xmi:id="_JphiscxZEe2nyZrTaGEi-g"
+      vendor="Microsoft SQL Server">
+    <substitutionBindings xmi:id="_gLLj8OfzEe2Dct7GaEsZog"
+        template="defaultSchema"
+        propName="/SystemName/Database/DBSchema"/>
+    <substitutionBindings xmi:id="_0EvIUOfzEe2Dct7GaEsZog"
+        template="noOfThreads"
+        propName="/SystemName/Database/DBNoOfThread"/>
+  </jndi:configuration>
+</jndi:namedResource>

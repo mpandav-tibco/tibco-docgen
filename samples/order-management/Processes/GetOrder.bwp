@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<pd:ProcessDefinition
+    xmlns:pd="http://xmlns.tibco.com/bw/process/2014"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+
+  <pd:name>Processes/GetOrder</pd:name>
+  <pd:description>Retrieves a single order by ID via REST GET /orders/{orderId}</pd:description>
+  <pd:startName>Start</pd:startName>
+
+  <pd:activity name="Start">
+    <pd:type>com.tibco.bw.palette.api.Start</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <config/>
+  </pd:activity>
+
+  <pd:activity name="HTTP Receiver">
+    <pd:type>com.tibco.bw.palette.rest.runtime.RESTHTTPReceiveEventActivity</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <pd:description>Accepts incoming GET request for an order resource</pd:description>
+    <config>
+      <resourceInstance>shared://REST_HTTP_Connector</resourceInstance>
+      <path>/orders/{orderId}</path>
+      <method>GET</method>
+      <port>%%{HTTP_PORT}%%</port>
+    </config>
+  </pd:activity>
+
+  <pd:activity name="Log Request">
+    <pd:type>com.tibco.bw.palette.log.runtime.LogActivity</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <config>
+      <message>GET /orders request received</message>
+      <severity>INFO</severity>
+    </config>
+  </pd:activity>
+
+  <pd:activity name="Query Order">
+    <pd:type>com.tibco.bw.palette.jdbc.runtime.JDBCQueryActivity</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <pd:description>Fetches order record from the orders table</pd:description>
+    <config>
+      <JDBCResource>shared://OrdersDB</JDBCResource>
+      <statement>SELECT order_id, customer_id, status, total_amount, created_at FROM orders WHERE order_id = ?</statement>
+      <outputStyle>Row as Element</outputStyle>
+      <maxRows>1</maxRows>
+    </config>
+  </pd:activity>
+
+  <pd:activity name="Map Response">
+    <pd:type>com.tibco.bw.palette.generalactivities.runtime.MappingActivity</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <pd:description>Transforms the JDBC result into the REST response payload</pd:description>
+    <config/>
+  </pd:activity>
+
+  <pd:activity name="Send Reply">
+    <pd:type>com.tibco.bw.palette.rest.runtime.RESTHTTPSendReplyActivity</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <config>
+      <responseCode>200</responseCode>
+      <contentType>application/json</contentType>
+    </config>
+  </pd:activity>
+
+  <pd:activity name="Send 404">
+    <pd:type>com.tibco.bw.palette.rest.runtime.RESTHTTPSendReplyActivity</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <pd:description>Returns 404 when order is not found</pd:description>
+    <config>
+      <responseCode>404</responseCode>
+      <contentType>application/json</contentType>
+    </config>
+  </pd:activity>
+
+  <pd:activity name="End">
+    <pd:type>com.tibco.bw.palette.api.End</pd:type>
+    <pd:resourceType>pd.activity</pd:resourceType>
+    <config/>
+  </pd:activity>
+
+  <pd:transition>
+    <pd:from>Start</pd:from>
+    <pd:to>HTTP Receiver</pd:to>
+    <pd:conditionType>always</pd:conditionType>
+  </pd:transition>
+
+  <pd:transition>
+    <pd:from>HTTP Receiver</pd:from>
+    <pd:to>Log Request</pd:to>
+    <pd:conditionType>always</pd:conditionType>
+  </pd:transition>
+
+  <pd:transition>
+    <pd:from>Log Request</pd:from>
+    <pd:to>Query Order</pd:to>
+    <pd:conditionType>always</pd:conditionType>
+  </pd:transition>
+
+  <pd:transition>
+    <pd:from>Query Order</pd:from>
+    <pd:to>Map Response</pd:to>
+    <pd:conditionType>expression</pd:conditionType>
+    <pd:conditionExpression>count($Query-Order/resultSet/Row) &gt; 0</pd:conditionExpression>
+  </pd:transition>
+
+  <pd:transition>
+    <pd:from>Query Order</pd:from>
+    <pd:to>Send 404</pd:to>
+    <pd:conditionType>otherwise</pd:conditionType>
+  </pd:transition>
+
+  <pd:transition>
+    <pd:from>Map Response</pd:from>
+    <pd:to>Send Reply</pd:to>
+    <pd:conditionType>always</pd:conditionType>
+  </pd:transition>
+
+  <pd:transition>
+    <pd:from>Send Reply</pd:from>
+    <pd:to>End</pd:to>
+    <pd:conditionType>always</pd:conditionType>
+  </pd:transition>
+
+  <pd:transition>
+    <pd:from>Send 404</pd:from>
+    <pd:to>End</pd:to>
+    <pd:conditionType>always</pd:conditionType>
+  </pd:transition>
+
+</pd:ProcessDefinition>

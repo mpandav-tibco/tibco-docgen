@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ems:EMSConnectionResource xmlns:ems="http://www.tibco.com/bw6/resource/ems">
+  <ems:name>OrderEvents</ems:name>
+  <ems:description>TIBCO EMS connection for order lifecycle event publishing</ems:description>
+  <ems:serverUrl>%%{EMS_URL}%%</ems:serverUrl>
+  <ems:username>%%{EMS_USER}%%</ems:username>
+  <ems:password>#!kFxP7rQ2m/Aw==!</ems:password>
+  <ems:clientId>order-management-service</ems:clientId>
+  <ems:reconnectAttempts>5</ems:reconnectAttempts>
+  <ems:reconnectDelay>2000</ems:reconnectDelay>
+</ems:EMSConnectionResource>

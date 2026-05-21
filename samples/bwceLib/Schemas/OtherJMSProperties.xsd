@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+    elementFormDefault="qualified">
+
+  <xsd:complexType name="JMSPropertiesType">
+    <xsd:sequence>
+      <xsd:element name="JMSCorrelationID" type="xsd:string" minOccurs="0"/>
+      <xsd:element name="JMSType" type="xsd:string" minOccurs="0"/>
+      <xsd:element name="JMSReplyTo" type="xsd:string" minOccurs="0"/>
+      <xsd:element name="JMSDeliveryMode" type="xsd:string" minOccurs="0"/>
+      <xsd:element name="JMSPriority" type="xsd:int" minOccurs="0"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
+  <xsd:element name="OtherJMSProperties" type="JMSPropertiesType"/>
+</xsd:schema>

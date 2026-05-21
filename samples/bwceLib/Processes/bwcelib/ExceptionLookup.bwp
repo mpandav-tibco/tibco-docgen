@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpws:process exitOnStandardFault="no" name="bwcelib.ExceptionLookup" suppressJoinFailure="yes"
+    targetNamespace="http://xmlns.example.com/ExceptionLookup" xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+    xmlns:info="http://www.tibco.com/bw/process/info"
+    xmlns:tib="http://ns.tibco.com/bw/property"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <info:processInfo callable="true" stateless="true" singleton="false" type="IT">
+    <info:Description>Looks up exception codes and descriptions from the ExceptionLookup CSV data format resource.</info:Description>
+  </info:processInfo>
+  <bpws:variables>
+    <bpws:variable name="Start" messageType="bpws:anyContent"/>
+    <bpws:variable name="End" messageType="bpws:anyContent"/>
+  </bpws:variables>
+  <bpws:flow>
+    <bpws:extensionActivity>
+      <tib:receive createInstance="yes" name="Start"><tib:inputBindings/></tib:receive>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:activity name="ParseExceptionFile" type="com.tibco.bw.palette.parse.runtime.DataFormatParseActivity">
+        <info:Description>Parse exception lookup CSV file using ExceptionLookup data format resource.</info:Description>
+        <tib:inputBindings>
+          <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                          xmlns:tns="http://xmlns.example.com/parse"
+                          version="2.0">
+            <xsl:param name="Start"/>
+            <xsl:template match="/">
+              <tns:ParseInput>
+                <tns:exceptionCode><xsl:value-of select="$Start/exceptionCode"/></tns:exceptionCode>
+                <tns:lookupKey><xsl:value-of select="concat($Start/domain, '.', $Start/exceptionCode)"/></tns:lookupKey>
+              </tns:ParseInput>
+            </xsl:template>
+          </xsl:stylesheet>
+        </tib:inputBindings>
+        <tib:config>
+          <tib:field name="dataFormatResource">bwcelib.ExceptionLookup</tib:field>
+        </tib:config>
+      </tib:activity>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:generalMapping name="MapExceptionDetails">
+        <info:Description>Map parsed exception data to output schema.</info:Description>
+        <tib:inputBindings>
+          <xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+                          xmlns:tns="http://xmlns.example.com/exception"
+                          xmlns:bw="http://www.tibco.com/bw/xslt/custom-functions"
+                          version="2.0">
+            <xsl:param name="Start"/>
+            <xsl:param name="ParseExceptionFile"/>
+            <xsl:template match="/">
+              <tns:ExceptionDetails>
+                <tns:exceptionCode><xsl:value-of select="$ParseExceptionFile/ExceptionRecord/code"/></tns:exceptionCode>
+                <tns:description><xsl:value-of select="$ParseExceptionFile/ExceptionRecord/description"/></tns:description>
+                <tns:severity><xsl:value-of select="$ParseExceptionFile/ExceptionRecord/severity"/></tns:severity>
+                <tns:recoverable><xsl:value-of select="$ParseExceptionFile/ExceptionRecord/recoverable"/></tns:recoverable>
+                <tns:remediation><xsl:value-of select="$ParseExceptionFile/ExceptionRecord/remediation"/></tns:remediation>
+                <tns:httpStatusCode><xsl:value-of select="$ParseExceptionFile/ExceptionRecord/httpStatusCode"/></tns:httpStatusCode>
+                <tns:domain><xsl:value-of select="$Start/domain"/></tns:domain>
+                <tns:lookupTimestamp><xsl:value-of select="current-dateTime()"/></tns:lookupTimestamp>
+              </tns:ExceptionDetails>
+            </xsl:template>
+          </xsl:stylesheet>
+        </tib:inputBindings>
+      </tib:generalMapping>
+    </bpws:extensionActivity>
+    <bpws:extensionActivity>
+      <tib:reply name="End"><tib:inputBindings/></tib:reply>
+    </bpws:extensionActivity>
+  </bpws:flow>
+</bpws:process>

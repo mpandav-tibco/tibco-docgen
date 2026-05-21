@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+packages/*/dist/
+cli/dist/
+vscode-extension/out/
+vscode-extension/cli/
+
+# Test output (generated docs — not source)
+test-output/
+
+# VSIX archives (built artifact)
+*.vsix
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/settings.json
+.vscode/.ropeproject

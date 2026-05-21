@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<application xmlns="http://www.tibco.com/xmlns/appinfo/1.0"
+    name="KafkaTopic_To_DB" version="1.0.0">
+  <modules>
+    <module symbolicName="KafkaTopic_To_DB.module" version="1.0.0.qualifier" type="application"/>
+    <module symbolicName="bwceLib" version="1.0.0.qualifier" type="shared"/>
+  </modules>
+  <properties>
+    <!-- Kafka Connection -->
+    <property name="/SystemName/Kafka/BootstrapServers" type="String" scalable="true" overrideValue="false">
+      <value>%%{KafkaBootstrapServers}%%</value>
+      <description>Kafka bootstrap server addresses (comma-separated)</description>
+    </property>
+    <property name="/SystemName/Kafka/TopicName" type="String" scalable="true" overrideValue="false">
+      <value>%%{KafkaTopicName}%%</value>
+      <description>Kafka topic to consume from</description>
+    </property>
+    <property name="/SystemName/Kafka/ConsumerGroup" type="String" scalable="true" overrideValue="false">
+      <value>consumer-group-test</value>
+      <description>Kafka consumer group ID</description>
+    </property>
+    <property name="/SystemName/Kafka/Username" type="String" scalable="true" overrideValue="false">
+      <value>%%{KafkaUsername}%%</value>
+    </property>
+    <property name="/SystemName/Kafka/Password" type="Password" scalable="true" overrideValue="false">
+      <value>%%{KafkaPassword}%%</value>
+    </property>
+    <!-- Database Connection -->
+    <property name="/SystemName/Database/ConnectionURL" type="String" scalable="true" overrideValue="false">
+      <value>%%{DBConnectionURL}%%</value>
+      <description>JDBC connection URL for SQL Server</description>
+    </property>
+    <property name="/SystemName/Database/Username" type="String" scalable="true" overrideValue="false">
+      <value>%%{DBUsername}%%</value>
+    </property>
+    <property name="/SystemName/Database/Password" type="Password" scalable="true" overrideValue="false">
+      <value>%%{DBPassword}%%</value>
+    </property>
+    <property name="/SystemName/Database/DBSchema" type="String" scalable="true" overrideValue="false">
+      <value>dbo</value>
+      <description>Database schema name</description>
+    </property>
+    <property name="/SystemName/Database/MaxConnections" type="Integer" scalable="true" overrideValue="false">
+      <value>10</value>
+      <description>Maximum number of DB connections in pool</description>
+    </property>
+    <property name="/SystemName/Database/DBNoOfThread" type="Integer" scalable="true" overrideValue="false">
+      <value>8</value>
+      <description>Number of database processing threads</description>
+    </property>
+    <!-- Logging -->
+    <property name="/bwceLib/ConsoleLoggingEnabled" type="Boolean" scalable="true" overrideValue="false">
+      <value>true</value>
+    </property>
+    <property name="/bwceLib/WebserviceLoggingEnabled" type="Boolean" scalable="true" overrideValue="false">
+      <value>false</value>
+    </property>
+    <property name="/bwceLib/DefaultLogLevel" type="String" scalable="true" overrideValue="false">
+      <value>INFO</value>
+    </property>
+    <!-- Metadata -->
+    <property name="/SystemName/MetaData/InterfaceID" type="String" scalable="false" overrideValue="false">
+      <value>KafkaToDB-001</value>
+      <description>Unique interface identifier for audit logging</description>
+    </property>
+    <property name="/SystemName/MetaData/ScenarioID" type="String" scalable="false" overrideValue="false">
+      <value>KAFKA-DB-SYNC</value>
+    </property>
+    <property name="/SystemName/MetaData/SourceSystem" type="String" scalable="false" overrideValue="false">
+      <value>Kafka</value>
+    </property>
+    <property name="/SystemName/MetaData/TargetSystem" type="String" scalable="false" overrideValue="false">
+      <value>Database</value>
+    </property>
+  </properties>
+</application>

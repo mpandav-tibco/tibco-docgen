@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpws:process exitOnStandardFault="no"
+    name="kafkatopic_to_db.module.Activator"
+    suppressJoinFailure="yes"
+    targetNamespace="http://xmlns.example.com/20221116125751"
+    variableAccessSerializable="no"
+    xmlns:bpws="http://docs.oasis-open.org/wsbpel/2.0/process/executable"
+    xmlns:tib="http://ns.tibco.com/bw/property"
+    xmlns:tibex="http://www.tibco.com/bpel/2007/extensions"
+    xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <bpws:eventHandlers>
+    <bpws:onEvent messageType="tibex:OnStartup"
+        partnerLink="tibex:EngineEvent"
+        portType="tibex:EngineEventPortType"
+        operation="OnStartup"
+        variable="OnStartupInput">
+      <bpws:sequence>
+        <bpws:extensionActivity>
+          <tib:callProcess name="ExceptionLookup"
+              activityDisplayName="Call Exception Lookup"
+              processName="bwcelib.ExceptionLookup"/>
+        </bpws:extensionActivity>
+        <bpws:extensionActivity>
+          <tib:callProcess name="AuditStart"
+              activityDisplayName="Audit Application Start"
+              processName="bwcelib.auditStart"/>
+        </bpws:extensionActivity>
+        <bpws:extensionActivity>
+          <tib:log name="LogStartup"
+              activityDisplayName="Log Startup"
+              message="Activator process executed successfully"/>
+        </bpws:extensionActivity>
+      </bpws:sequence>
+    </bpws:onEvent>
+    <bpws:onEvent messageType="tibex:OnShutdown"
+        partnerLink="tibex:EngineEvent"
+        portType="tibex:EngineEventPortType"
+        operation="OnShutdown"
+        variable="OnShutdownInput">
+      <bpws:sequence>
+        <bpws:extensionActivity>
+          <tib:callProcess name="AuditEnd"
+              activityDisplayName="Audit Application End"
+              processName="bwcelib.auditEnd"/>
+        </bpws:extensionActivity>
+        <bpws:extensionActivity>
+          <tib:log name="LogShutdown"
+              activityDisplayName="Log Shutdown"
+              message="Engine Shutting down. {BW.PROCESS.NAME}"/>
+        </bpws:extensionActivity>
+      </bpws:sequence>
+    </bpws:onEvent>
+  </bpws:eventHandlers>
+  <bpws:faultHandlers>
+    <bpws:catch>
+      <bpws:sequence>
+        <bpws:extensionActivity>
+          <tib:callProcess name="LogInternalError"
+              activityDisplayName="Log Internal Error"
+              processName="bwcelib.internalErrorLogger"/>
+        </bpws:extensionActivity>
+        <bpws:extensionActivity>
+          <tib:engineCommand name="StopApplication"
+              activityDisplayName="Stop Application"
+              command="stop"/>
+        </bpws:extensionActivity>
+      </bpws:sequence>
+    </bpws:catch>
+  </bpws:faultHandlers>
+  <bpws:sequence>
+    <bpws:extensionActivity>
+      <tib:log name="ActivatorInit"
+          activityDisplayName="Log Init"
+          message="Activator initialized"/>
+    </bpws:extensionActivity>
+  </bpws:sequence>
+</bpws:process>
