@@ -22,7 +22,7 @@ function renderSubstValue(v: string | undefined): string {
   if (!v) return '—';
   const s = String(v)
     .replace(/%%\{([^}]+)\}%%/g, '`$${$1}`')
-    .replace(/^(?:#!.+!$|SECRET:.*)/, '🔒 redacted');
+    .replace(/^(?:#!|SECRET:).*/, '🔒 redacted');
   return esc(s);
 }
 

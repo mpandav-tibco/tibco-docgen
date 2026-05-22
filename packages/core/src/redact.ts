@@ -4,7 +4,8 @@ import type { DocModel, PropertyDoc, SharedVarDoc } from './model';
 const SENSITIVE_KEY_RE = /password|passwd|api[_.-]?key|secret|token|credential|private[._-]?key|passphrase/i;
 
 // Value patterns that are always sensitive — TIBCO substvar SECRET: prefix and encrypted marker.
-const SENSITIVE_VAL_RE = /^SECRET:|^#!.+!$/;
+// Note: TIBCO encrypted values start with #! and end with base64 padding (=), NOT with !
+const SENSITIVE_VAL_RE = /^SECRET:|^#!/;
 
 export const REDACTED = '🔒 redacted';
 
@@ -19,7 +20,8 @@ function redactSettings(s?: Record<string, unknown>): Record<string, unknown> | 
 }
 
 function redactProp(p: PropertyDoc): PropertyDoc {
-  return isSensitiveKey(p.name) || isSensitiveVal(p.value) ? { ...p, value: REDACTED } : p;
+  const sensitive = isSensitiveKey(p.name) || isSensitiveVal(p.value) || p.type?.toLowerCase() === 'password';
+  return sensitive ? { ...p, value: REDACTED } : p;
 }
 
 function redactSharedVar(v: SharedVarDoc): SharedVarDoc {
