@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import * as fs from 'fs';
 import * as path from 'path';
-import { renderHTML, renderMarkdown, renderEMSHTML, DocModel } from '@tibco-docgen/core';
+import { renderHTML, renderMarkdown, renderEMSHTML, DocModel, redactModel } from '@tibco-docgen/core';
 import { parseFlogoFile, canParse as canParseFlogo } from '@tibco-docgen/parser-flogo';
 import { parseBW6App, parseBW6Ear, parseBW6Zip, canParse as canParseBW6, buildBW6IconRegistry, defaultBW6PluginsDirs } from '@tibco-docgen/parser-bw6';
 import { parseEMSConfig, parseEMSFromRest, parseEMSFromAdmin, canParse as canParseEMS } from '@tibco-docgen/parser-ems';
@@ -373,6 +373,8 @@ export async function generateDocs(
       log(`\n   ✗ Parse error: ${err instanceof Error ? err.message : String(err)}\n`);
       continue;
     }
+
+    model = redactModel(model);
 
     const violations = model.violations ?? [];
     const errCount  = violations.filter(v => v.severity === 'error').length;

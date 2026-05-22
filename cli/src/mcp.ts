@@ -7,6 +7,7 @@ import * as path from 'path';
 import { parseBW6App, parseBW6Ear, parseBW6Zip, canParse as canParseBW6 } from '@tibco-docgen/parser-bw6';
 import { parseFlogoFile, canParse as canParseFlogo } from '@tibco-docgen/parser-flogo';
 import { parseEMSConfig, canParse as canParseEMS } from '@tibco-docgen/parser-ems';
+import { redactModel, DocModel } from '@tibco-docgen/core';
 import { generateDocs } from './index';
 
 // ─── Tool schemas ─────────────────────────────────────────────────────────────
@@ -150,10 +151,11 @@ export async function startMcpServer(): Promise<void> {
       try {
         model = parseProject(projectDir);
       } catch (err) {
-        return textResult(`Error parsing project: ${(err as Error).message}`, true);
+        return textResult(`Error parsing project: ${err instanceof Error ? err.message : String(err)}`, true);
       }
-      const raw = model as unknown as Record<string, unknown>;
-      return textResult(JSON.stringify({ summary: modelSummary(raw), model }, null, 2));
+      const redacted = redactModel(model as unknown as DocModel);
+      const raw = redacted as unknown as Record<string, unknown>;
+      return textResult(JSON.stringify({ summary: modelSummary(raw), model: redacted }, null, 2));
     }
 
     return textResult(`Unknown tool: ${name}`, true);

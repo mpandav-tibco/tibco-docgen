@@ -312,7 +312,7 @@ export function transTypeBadge(type: string): string {
 export function renderBW6Value(value: unknown): string {
   if (value == null || value === '') return '<span style="color:#94a3b8">—</span>';
   const s = String(value);
-  if (/^#!.+!$/.test(s)) return '<span class="encrypted">🔒 encrypted</span>';
+  if (/^#!.+!$/.test(s) || /^SECRET:/i.test(s)) return '<span class="encrypted">🔒 redacted</span>';
   // Use html`` to auto-escape the raw value, then mark substvar spans as safe
   const escaped = html`${s}`.value;
   return escaped.replace(/%%\{([^}]+)\}%%/g, (_, name) =>

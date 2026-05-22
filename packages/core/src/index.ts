@@ -1,4 +1,5 @@
 export * from './model';
+export { redactModel, REDACTED } from './redact';
 export * from './html-safe';
 export * from './svg/flow-renderer';
 export * from './renderer/html';
