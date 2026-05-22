@@ -10,7 +10,7 @@ const xmlParser = new XMLParser({
   parseTagValue: false,
   trimValues: true,
   // Raise entity expansion limit for large BW6 process files (default is 1000)
-  processEntities: { enabled: true, maxTotalExpansions: 100000 } as unknown as boolean,
+  processEntities: { enabled: true, maxTotalExpansions: 100000 },
 });
 
 // ─── BPEL activity extraction ─────────────────────────────────────────────────

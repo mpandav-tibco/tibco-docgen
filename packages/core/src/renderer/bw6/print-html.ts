@@ -226,14 +226,14 @@ function getFaultIds(flow: FlowDoc): Set<string> {
   return errorTargets;
 }
 
-function buildProcessSection(flow: FlowDoc, index: number, triggerMap: Map<string, { ref: string }>, product: string, iconRegistry?: unknown, addPageBreak = true): string {
+function buildProcessSection(flow: FlowDoc, index: number, triggerMap: Map<string, { ref: string }>, product: string, iconRegistry?: BW6IconRegistry, addPageBreak = true): string {
   const starterRef = (triggerMap.get(flow.id) as { ref?: string })?.ref ?? '';
   const starterLabel = starterRef ? humanizeType(starterRef) : '—';
   const faultIds = getFaultIds(flow);
   const flowSvg = svgToFitPage(
     product === 'flogo'
       ? renderFlowSVG(flow, { activityLinks: false })
-      : renderBW6FlowSVG(flow, { activityLinks: false, iconRegistry: iconRegistry as never })
+      : renderBW6FlowSVG(flow, { activityLinks: false, iconRegistry })
   );
 
   const SKIP_KEYS = new Set(['expression', 'expressionLanguage', 'xpdlId']);
@@ -352,7 +352,7 @@ function buildProcessSection(flow: FlowDoc, index: number, triggerMap: Map<strin
 </div>`;
 }
 
-function buildGroupedProcessSection(key: string, flows: FlowDoc[], groupIndex: number, triggerMap: Map<string, { ref: string }>, product: string, iconRegistry?: unknown): string {
+function buildGroupedProcessSection(key: string, flows: FlowDoc[], groupIndex: number, triggerMap: Map<string, { ref: string }>, product: string, iconRegistry?: BW6IconRegistry): string {
   const displayName = key.split(/[./\\]/).filter(Boolean).pop() ?? key;
   const totalActs  = flows.reduce((s, f) => s + f.activities.length, 0);
   const totalLinks = flows.reduce((s, f) => s + f.links.length, 0);
@@ -584,7 +584,6 @@ const PRINT_CSS = `
 
 export function renderBW6PrintHTML(model: DocModel, bw6Icons?: BW6IconRegistry): string {
   const triggerMap = buildFlowTriggerMap(model);
-  const iconRegistry = bw6Icons;
 
   const cover    = buildCoverPage(model);
   const toc      = buildTOC(model);
@@ -595,8 +594,8 @@ export function renderBW6PrintHTML(model: DocModel, bw6Icons?: BW6IconRegistry):
     .map(([key, gFlows], i) => {
       const isGrouped = gFlows.length > 1 || gFlows[0].id !== key;
       return isGrouped
-        ? buildGroupedProcessSection(key, gFlows, i + 1, typedTriggerMap, model.product, iconRegistry)
-        : buildProcessSection(gFlows[0], i + 1, typedTriggerMap, model.product, iconRegistry);
+        ? buildGroupedProcessSection(key, gFlows, i + 1, typedTriggerMap, model.product, bw6Icons)
+        : buildProcessSection(gFlows[0], i + 1, typedTriggerMap, model.product, bw6Icons);
     })
     .join('\n');
   const resources   = buildResourcesSection(model);

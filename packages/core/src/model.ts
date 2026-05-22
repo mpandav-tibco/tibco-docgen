@@ -102,7 +102,7 @@ export interface LinkDoc {
   id: number;
   from: string;
   to: string;
-  type: 'label' | 'expression' | 'error' | 'default';
+  type: 'always' | 'label' | 'expression' | 'error' | 'default';
   label?: string;
   condition?: string;
 }

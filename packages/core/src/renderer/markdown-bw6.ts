@@ -684,7 +684,7 @@ export function renderBW6Markdown(model: DocModel, outputDir: string, options?: 
     for (const imp of app.imports) {
       const [bundle, ...rest] = imp.split(';');
       const versionPart = rest.find(r => r.includes('bundle-version') || r.includes('version'));
-      const version = versionPart ? versionPart.replace(/bundle-version=|version=/g, '').replace(/['"[\]]/g, '').trim() : '—';
+      const version = versionPart ? versionPart.replace(/bundle-version=|version=/g, '').replace(/['"\[\]]/g, '').trim() : '—';
       lines.push(`| \`${esc(bundle.trim())}\` | ${esc(version)} |`);
     }
     lines.push('');

@@ -250,7 +250,9 @@ export function renderArchDiagramSVG(model: DocModel): string {
         ${escHtml(n.label)}
       </text>
       ${n.sublabel ? `<text x="${x + 10}" y="${y + 28}" font-family="Segoe UI,system-ui,sans-serif" font-size="9.5" fill="#64748b">${escHtml(n.sublabel)}</text>` : ''}`;
-    if (linkHref) return `<a href="${linkHref}" style="cursor:pointer">${inner}</a>`;
+    // Only allow safe relative paths — block javascript:, data:, and protocol-relative URLs
+    const safeHref = linkHref && /^[a-zA-Z0-9_./-]+\.html(#[a-zA-Z0-9_-]*)?$/.test(linkHref) ? linkHref : null;
+    if (safeHref) return `<a href="${escHtml(safeHref)}" style="cursor:pointer">${inner}</a>`;
     return inner;
   }
 

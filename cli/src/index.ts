@@ -278,8 +278,9 @@ export async function generateDocs(
         });
       }
     } catch (err) {
-      log(`\n   ✗ Connection error: ${(err as Error).message}\n`);
-      return { success: false, outputDir, error: (err as Error).message };
+      const msg = err instanceof Error ? err.message : String(err);
+      log(`\n   ✗ Connection error: ${msg}\n`);
+      return { success: false, outputDir, error: msg };
     }
     const emsHtmlOut = path.join(outputDir, 'html');
     const emsJsonOut = path.join(outputDir, 'json');
@@ -338,7 +339,7 @@ export async function generateDocs(
       try {
         emsModel = parseEMSConfig(entry.path);
       } catch (err) {
-        log(`\n   ✗ Parse error: ${(err as Error).message}\n`);
+        log(`\n   ✗ Parse error: ${err instanceof Error ? err.message : String(err)}\n`);
         continue;
       }
       const { queues, topics, factories, users, acls, routes } = emsModel;
@@ -365,7 +366,7 @@ export async function generateDocs(
         model = parseFlogoFile(entry.path);
       }
     } catch (err) {
-      log(`\n   ✗ Parse error: ${(err as Error).message}\n`);
+      log(`\n   ✗ Parse error: ${err instanceof Error ? err.message : String(err)}\n`);
       continue;
     }
 
