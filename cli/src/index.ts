@@ -176,7 +176,11 @@ function parseArgs(argv: string[]): ParsedArgs {
       output = args[++i];
     } else if ((args[i] === '-f' || args[i] === '--format') && args[i + 1]) {
       const f = args[++i];
-      if (f === 'html' || f === 'md' || f === 'json' || f === 'pdf' || f === 'all') format = f;
+      if (f === 'html' || f === 'md' || f === 'json' || f === 'pdf' || f === 'all') {
+        format = f;
+      } else {
+        process.stderr.write(`Warning: unknown format "${f}" — valid values: html, md, json, pdf, all. Defaulting to "all".\n`);
+      }
     } else if (args[i] === '--no-open') {
       open = false;
     } else if (args[i] === '--watch' || args[i] === '-w') {

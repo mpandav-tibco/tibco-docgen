@@ -38,6 +38,8 @@ export async function startWatch(
     log(`\n[watch] Changed: ${path.basename(changedPath)} — regenerating...\n`);
     try {
       await generateDocs(inputPath, outputDir, format, log);
+    } catch (err) {
+      log(`\n[watch] Error: ${err instanceof Error ? err.message : String(err)}\n`);
     } finally {
       running = false;
     }
@@ -49,6 +51,8 @@ export async function startWatch(
     log(`\n[watch] Added: ${path.basename(changedPath)} — regenerating...\n`);
     try {
       await generateDocs(inputPath, outputDir, format, log);
+    } catch (err) {
+      log(`\n[watch] Error: ${err instanceof Error ? err.message : String(err)}\n`);
     } finally {
       running = false;
     }

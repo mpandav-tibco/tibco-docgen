@@ -327,7 +327,8 @@ function extractActivityLinks(
 }
 
 /** Collect link type declarations from <bpws:links><bpws:link name="..." tibex:linkType="..."> anywhere in the tree. */
-export function collectLinkTypes(node: Record<string, unknown>, out: Map<string, string>): void {
+export function collectLinkTypes(node: Record<string, unknown>, out: Map<string, string>, depth = 0): void {
+  if (depth > 100) return;
   for (const [key, val] of Object.entries(node)) {
     if (key.startsWith('@_') || key === '#text') continue;
     if (key === 'link') {
@@ -342,7 +343,7 @@ export function collectLinkTypes(node: Record<string, unknown>, out: Map<string,
     } else {
       const children = Array.isArray(val) ? val : [val];
       for (const c of children) {
-        if (c && typeof c === 'object') collectLinkTypes(c as Record<string, unknown>, out);
+        if (c && typeof c === 'object') collectLinkTypes(c as Record<string, unknown>, out, depth + 1);
       }
     }
   }
@@ -354,7 +355,9 @@ export function collectBpelActivities(
   seenNames: Set<string>,
   inFaultHandler = false,
   linkTypes?: Map<string, string>,
+  depth = 0,
 ): void {
+  if (depth > 100) return;
   for (const [key, val] of Object.entries(node)) {
     if (key.startsWith('@_') || key === '#text') continue;
     // Skip non-activity sections embedded in BWCE BPEL files:
@@ -376,7 +379,7 @@ export function collectBpelActivities(
       const c = child as Record<string, unknown>;
       if (FAULT_HANDLER_ELEMENTS.has(key)) {
         // Fault/compensation branches — recurse, marking activities as fault-handler
-        collectBpelActivities(c, out, seenNames, true, linkTypes);
+        collectBpelActivities(c, out, seenNames, true, linkTypes, depth + 1);
       } else if (BPEL_CONTAINER_ELEMENTS.has(key)) {
         // Check if this container acts as an activity proxy (forEach group wrapper): it has direct
         // <bpws:targets>/<bpws:sources> children with outer flow connections (e.g. <bpws:scope name="ForEach">).
@@ -386,7 +389,7 @@ export function collectBpelActivities(
         const hasOuterLinks = outerLinks && (outerLinks.targetLinks.length + outerLinks.sourceLinks.length > 0);
         if (hasOuterLinks) {
           const innerActs: BpelActivity[] = [];
-          collectBpelActivities(c, innerActs, seenNames, inFaultHandler, linkTypes);
+          collectBpelActivities(c, innerActs, seenNames, inFaultHandler, linkTypes, depth + 1);
           if (innerActs.length > 0) {
             innerActs[0].targetLinks.push(...outerLinks!.targetLinks);
             innerActs[innerActs.length - 1].sourceLinks.push(...outerLinks!.sourceLinks);
@@ -394,7 +397,7 @@ export function collectBpelActivities(
           out.push(...innerActs);
         } else {
           // Transparent containers — recurse without producing an activity node
-          collectBpelActivities(c, out, seenNames, inFaultHandler, linkTypes);
+          collectBpelActivities(c, out, seenNames, inFaultHandler, linkTypes, depth + 1);
         }
       } else if (key === 'empty') {
         // <bpws:empty> with tibex:constructor is a lifecycle marker (onMessageStart/onMessageEnd) —
@@ -426,7 +429,7 @@ export function collectBpelActivities(
         const { sourceLinks, targetLinks } = extractActivityLinks(c, linkTypes);
         out.push({ name: uniq, type: key, attrs, configFields, inFaultHandler, mappings, typeId, sourceLinks, targetLinks });
         // Recurse for nested fault scopes inside activities (e.g. scope with fault handler)
-        collectBpelActivities(c, out, seenNames, inFaultHandler, linkTypes);
+        collectBpelActivities(c, out, seenNames, inFaultHandler, linkTypes, depth + 1);
       }
       // Unknown element: skip entirely — it is metadata, config, or a BPEL/TIBCO extension
       // that is not an activity (e.g. VariableDescriptor, wsdl:definitions, SCA bindings).
@@ -436,11 +439,11 @@ export function collectBpelActivities(
 
 /** Walk the parsed BPEL tree to find the first <bpws:pick> that has <bpws:onMessage> children.
  *  Returns that pick node, or undefined if not found. */
-function findPickWithOnMessage(node: unknown): Record<string, unknown> | undefined {
-  if (!node || typeof node !== 'object') return undefined;
+function findPickWithOnMessage(node: unknown, depth = 0): Record<string, unknown> | undefined {
+  if (depth > 100 || !node || typeof node !== 'object') return undefined;
   if (Array.isArray(node)) {
     for (const c of node) {
-      const r = findPickWithOnMessage(c);
+      const r = findPickWithOnMessage(c, depth + 1);
       if (r) return r;
     }
     return undefined;
@@ -450,7 +453,7 @@ function findPickWithOnMessage(node: unknown): Record<string, unknown> | undefin
   for (const [k, v] of Object.entries(obj)) {
     if (k.startsWith('@_') || k === '#text') continue;
     if (k === 'Types' || k === 'Diagram' || k === 'ProcessInfo') continue;
-    const r = findPickWithOnMessage(v);
+    const r = findPickWithOnMessage(v, depth + 1);
     if (r) return r;
   }
   return undefined;

@@ -10,7 +10,7 @@ import { setIconRegistry, getIconRegistry } from './bw6/icon-registry';
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
 function esc(s: string): string {
-  return String(s).replace(/\|/g, '\\|').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return String(s).replace(/&/g, '&amp;').replace(/\|/g, '\\|').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 function escMd(s: string): string {

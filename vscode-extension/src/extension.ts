@@ -329,7 +329,7 @@ function resolveOutputDir(inputPath: string): string {
     }
     return configured;
   }
-  const base = fs.statSync(inputPath).isFile() ? path.dirname(inputPath) : path.dirname(inputPath);
+  const base = path.dirname(inputPath);
   return path.join(base, 'docgen-out');
 }
 
@@ -349,7 +349,7 @@ function resolveEMSOutputDir(connName: string): string {
 
 // ─── Run the CLI in-process ───────────────────────────────────────────────────
 
-interface RunResult { success: boolean; outputDir: string; }
+interface RunResult { success: boolean; outputDir: string; error?: string; }
 
 async function runCLI(
   cliScript: string,
@@ -421,12 +421,12 @@ async function runCLI(
       outputChannel.appendLine(`\n✗ Generation failed${result.error ? ': ' + result.error : ''}`);
     }
 
-    return { success: result.success, outputDir: result.outputDir };
+    return { success: result.success, outputDir: result.outputDir, error: result.error };
 
   } catch (err) {
-    const msg = (err as Error).message;
+    const msg = err instanceof Error ? err.message : String(err);
     outputChannel.appendLine(`\n✗ Error: ${msg}`);
-    return { success: false, outputDir };
+    return { success: false, outputDir, error: msg };
   }
 }
 
@@ -558,8 +558,9 @@ async function generateEMSDocs(context: vscode.ExtensionContext): Promise<void> 
 
 async function handleResult(runResult: RunResult | undefined): Promise<void> {
   if (!runResult?.success) {
+    const detail = runResult?.error ? `: ${runResult.error}` : '';
     const action = await vscode.window.showErrorMessage(
-      'DocGen: Generation failed. Check the Output panel for details.',
+      `DocGen: Generation failed${detail}. Check the Output panel for details.`,
       'Show Output'
     );
     if (action === 'Show Output') outputChannel.show();
